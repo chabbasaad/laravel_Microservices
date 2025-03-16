@@ -129,6 +129,33 @@ class EventController extends Controller
                 return response()->json(['error' => 'Unauthorized to update this event'], 403);
             }
 
+            // Special handling for available_tickets update
+            if ($request->has('available_tickets')) {
+                $newAvailableTickets = $request->available_tickets;
+                
+                // Validate available tickets
+                if ($newAvailableTickets < 0 || $newAvailableTickets > $event->max_tickets) {
+                    return response()->json([
+                        'error' => 'Invalid available tickets count',
+                        'max_allowed' => $event->max_tickets,
+                        'requested' => $newAvailableTickets
+                    ], 422);
+                }
+
+                $event->available_tickets = $newAvailableTickets;
+                $event->save();
+
+                Log::info('Event tickets updated', [
+                    'event_id' => $event->id,
+                    'previous_available' => $event->available_tickets,
+                    'new_available' => $newAvailableTickets,
+                    'updater_id' => $user->id
+                ]);
+
+                return response()->json($event);
+            }
+
+            // Regular update validation for other fields
             $validator = Validator::make($request->all(), [
                 'title' => 'string|max:255',
                 'description' => 'string',

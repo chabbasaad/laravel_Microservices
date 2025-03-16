@@ -24,7 +24,7 @@ Route::middleware(TrustGatewayAuth::class)->group(function () {
     Route::post('/', [EventController::class, 'store'])
         ->middleware(CheckRole::class . ':create');
         
-    Route::put('/{id}', [EventController::class, 'update'])
+    Route::match(['put', 'patch'], '/{id}', [EventController::class, 'update'])
         ->middleware(CheckRole::class . ':update');
         
     Route::delete('/{id}', [EventController::class, 'destroy'])

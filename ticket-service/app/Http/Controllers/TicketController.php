@@ -180,23 +180,16 @@ class TicketController extends Controller
                 
                 Log::info('Updating event tickets', [
                     'url' => $updateUrl,
-                    'available_tickets' => $event['available_tickets'] - $successfulTickets
+                    'tickets_purchased' => $successfulTickets
                 ]);
 
+                // Simplified update payload - only send what needs to change
                 $updateResponse = Http::withHeaders([
                     'X-User-Id' => (string)$user['id'],
                     'X-User-Role' => strtolower($user['role'])
                 ])->withToken($request->bearerToken())
-                  ->put($updateUrl, [
-                    'available_tickets' => $event['available_tickets'] - $successfulTickets,
-                    'speakers' => $event['speakers'] ?? [],
-                    'sponsors' => $event['sponsors'] ?? [],
-                    'title' => $event['title'],
-                    'description' => $event['description'],
-                    'date' => $event['date'],
-                    'location' => $event['location'],
-                    'price' => $event['price'],
-                    'status' => $event['status']
+                  ->patch($updateUrl, [
+                    'available_tickets' => $event['available_tickets'] - $successfulTickets
                 ]);
 
                 if (!$updateResponse->successful()) {

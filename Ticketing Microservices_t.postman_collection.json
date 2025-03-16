@@ -1,0 +1,626 @@
+{
+	"info": {
+		"_postman_id": "d8037965-9c9d-49a6-8a55-55025f416afc",
+		"name": "Ticketing Microservices Copy",
+		"description": "Collection for testing the Ticketing Microservices system",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "25966579"
+	},
+	"item": [
+		{
+			"name": "Auth Service",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/auth/register"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/auth/login"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/auth/logout"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Service",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/users"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/users/{{user_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/users/{{user_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Updated\",\n    \"email\": \"john.updated@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/users/profile"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Event Service",
+			"item": [
+				{
+					"name": "List Events",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/events"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Tech Conference 2025\",\n    \"description\": \"Annual technology conference\",\n    \"date\": \"2025-06-15T09:00:00\",\n    \"location\": \"Convention Center\",\n    \"max_tickets\": 500,\n    \"price\": 99.99,\n    \"status\": \"draft\",\n    \"speakers\": [\n        {\n            \"name\": \"Jane Smith\",\n            \"bio\": \"AI Expert\",\n            \"photo_url\": \"https://example.com/jane.jpg\",\n            \"company\": \"Tech Corp\",\n            \"position\": \"CTO\",\n            \"topic\": \"Future of AI\",\n            \"speaking_time\": \"10:00\"\n        }\n    ],\n    \"sponsors\": [\n        {\n            \"name\": \"Tech Corp\",\n            \"logo_url\": \"https://example.com/techcorp.png\",\n            \"website_url\": \"https://techcorp.com\",\n            \"tier\": \"platinum\",\n            \"type\": \"main\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/events"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Event",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Updated Tech Conference 2025\",\n    \"status\": \"published\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Event",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Speaker",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Expert\",\n    \"bio\": \"Cloud Computing Expert\",\n    \"photo_url\": \"https://example.com/john.jpg\",\n    \"company\": \"Cloud Corp\",\n    \"position\": \"Cloud Architect\",\n    \"topic\": \"Future of Cloud Computing\",\n    \"speaking_time\": \"14:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}/speakers"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Speaker",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"topic\": \"Advanced Cloud Computing\",\n    \"speaking_time\": \"15:00\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}/speakers/{{speaker_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Speaker",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}/speakers/{{speaker_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Sponsor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Cloud Corp\",\n    \"logo_url\": \"https://example.com/cloudcorp.png\",\n    \"website_url\": \"https://cloudcorp.com\",\n    \"tier\": \"gold\",\n    \"type\": \"regular\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}/sponsors"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Sponsor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tier\": \"platinum\",\n    \"type\": \"main\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}/sponsors/{{sponsor_id}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Sponsor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Role",
+								"value": "event_creator",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "1",
+								"type": "text"
+							}
+						],
+						"url": "{{gateway_url}}/api/v1/events/{{event_id}}/sponsors/{{sponsor_id}}"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tickets & paiment service",
+			"item": [
+				{
+					"name": "purchase tickets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "67|ItNCDCzM6qqcG5WSVy0LKa9e07Te4Db2hQT4jG88"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"event_id\": 1,\r\n    \"quantity\": 2,\r\n    \"payment\": {\r\n        \"card_number\": \"4111111111111111\",  // Valid test Visa card\r\n        \"expiry\": \"12/25\",\r\n        \"cvv\": \"123\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8000/api/v1/tickets/purchase"
+					},
+					"response": []
+				},
+				{
+					"name": "cancel tickets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "67|ItNCDCzM6qqcG5WSVy0LKa9e07Te4Db2hQT4jG88"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"event_id\": 1,\r\n    \"quantity\": 2,\r\n    \"payment\": {\r\n        \"card_number\": \"4111111111111111\",  // Valid test Visa card\r\n        \"expiry\": \"12/25\",\r\n        \"cvv\": \"123\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8000/api/v1/tickets/5/cancel"
+					},
+					"response": []
+				},
+				{
+					"name": "view all tickets of a user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "67|ItNCDCzM6qqcG5WSVy0LKa9e07Te4Db2hQT4jG88"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8000/api/v1/tickets/user/14"
+					},
+					"response": []
+				},
+				{
+					"name": "get ticket by id",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "validate ticket ( for use it only one time )",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "67|ItNCDCzM6qqcG5WSVy0LKa9e07Te4Db2hQT4jG88"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "http://localhost:8000/api/v1/tickets/{ticketId}/validate"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "gateway_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "your_jwt_token_here",
+			"type": "string"
+		},
+		{
+			"key": "event_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "10",
+			"type": "string"
+		},
+		{
+			"key": "speaker_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "sponsor_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
