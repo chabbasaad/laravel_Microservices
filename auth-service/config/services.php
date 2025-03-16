@@ -43,8 +43,9 @@ return [
     ],
 
     'user' => [
-        'base_url' => env('USER_SERVICE_URL', 'http://localhost:8001'),
+        'base_url' => env('USER_SERVICE_URL', 'http://localhost:8002'),
         'timeout' => env('USER_SERVICE_TIMEOUT', 5),
+        'api_prefix' => 'api'
     ],
 
 ];

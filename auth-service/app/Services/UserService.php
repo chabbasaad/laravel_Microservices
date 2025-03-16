@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Log;
 class UserService
 {
     protected string $baseUrl;
+    protected string $apiPrefix;
 
     public function __construct()
     {
-        $this->baseUrl = config('services.user.base_url', 'http://localhost:8001');
+        $this->baseUrl = config('services.user.base_url', 'http://localhost:8002');
+        $this->apiPrefix = config('services.user.api_prefix', 'api');
         Log::info('UserService initialized with base URL: ' . $this->baseUrl);
     }
 
@@ -21,7 +23,7 @@ class UserService
      */
     public function createUser(array $userData): Response
     {
-        $url = "{$this->baseUrl}/api/users";
+        $url = "{$this->baseUrl}/{$this->apiPrefix}";
         Log::info('Attempting to create user in User Service', [
             'url' => $url,
             'userData' => array_merge($userData, ['password' => '***REDACTED***'])
@@ -39,7 +41,7 @@ class UserService
             } else {
                 Log::info('Successfully created user in User Service', [
                     'status' => $response->status(),
-                    'userId' => $response->json()['id'] ?? null
+                    'userId' => $response->json()['data']['id'] ?? null
                 ]);
             }
 
@@ -74,7 +76,7 @@ class UserService
      */
     public function getUserById(string $userId): Response
     {
-        $url = "{$this->baseUrl}/api/users/{$userId}";
+        $url = "{$this->baseUrl}/{$this->apiPrefix}/{$userId}";
         Log::info('Fetching user from User Service', ['url' => $url, 'userId' => $userId]);
 
         try {
@@ -119,7 +121,7 @@ class UserService
      */
     public function getUserByEmail(string $email): Response
     {
-        $url = "{$this->baseUrl}/api/users/by-email/{$email}";
+        $url = "{$this->baseUrl}/{$this->apiPrefix}/by-email/{$email}";
         Log::info('Fetching user by email from User Service', ['url' => $url, 'email' => $email]);
 
         try {
@@ -164,7 +166,7 @@ class UserService
      */
     public function updateUser(string $userId, array $userData): Response
     {
-        $url = "{$this->baseUrl}/api/users/{$userId}";
+        $url = "{$this->baseUrl}/{$this->apiPrefix}/{$userId}";
         Log::info('Updating user in User Service', [
             'url' => $url,
             'userId' => $userId,
@@ -199,9 +201,9 @@ class UserService
                 ])
             ));
         } catch (\Exception $e) {
-            Log::error('Error updating user in User Service', [
+            Log::error('Failed to update user in User Service', [
                 'error' => $e->getMessage(),
-                'userId' => $userId,
+                'url' => $url,
                 'trace' => $e->getTraceAsString()
             ]);
             throw $e;

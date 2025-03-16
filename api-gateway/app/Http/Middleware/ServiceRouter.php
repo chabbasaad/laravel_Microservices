@@ -37,6 +37,11 @@ class ServiceRouter
         $targetPath = $this->getTargetPath($path, $service);
         $fullUrl = rtrim($serviceUrl, '/') . '/api/' . ltrim($targetPath, '/');
 
+        // Allow health check endpoints without authentication
+        if ($targetPath === 'health') {
+            return $this->forwardRequest($request, $fullUrl);
+        }
+
         // For auth service requests, just forward them as is
         if ($service === 'auth') {
             return $this->forwardRequest($request, $fullUrl);

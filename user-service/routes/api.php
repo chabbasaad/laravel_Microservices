@@ -25,10 +25,12 @@ Route::get('health', function () {
     ]);
 });
 
-// User management routes
+// Public routes
+Route::post('/', [UserController::class, 'store']);
+
+// Protected routes
 Route::middleware(CheckUserRole::class)->group(function () {
     Route::get('/', [UserController::class, 'index']);
-    Route::post('/', [UserController::class, 'store']);
     Route::get('/{id}', [UserController::class, 'show']);
     Route::get('/by-email/{email}', [UserController::class, 'findByEmail']);
     Route::put('/{id}', [UserController::class, 'update']);
