@@ -548,12 +548,56 @@ class TicketController extends Controller
 
             // Process cancellation
             try {
-                $ticket->cancel();
+                // Begin transaction
+                \DB::beginTransaction();
                 
-                Log::info('Ticket cancelled successfully', [
+                $ticket->cancel();
+
+                // Get event details to update available tickets
+                $eventUrl = rtrim(config('services.events.base_url'), '/') . config('services.events.routes.show');
+                $eventUrl = str_replace('{id}', $ticket->event_id, $eventUrl);
+                
+                $eventResponse = Http::withHeaders([
+                    'X-User-Id' => (string)$user['id'],
+                    'X-User-Role' => strtolower($user['role'])
+                ])->withToken($request->bearerToken())
+                  ->get($eventUrl);
+
+                if (!$eventResponse->successful()) {
+                    throw new \Exception('Failed to fetch event details for ticket update');
+                }
+
+                $event = $eventResponse->json();
+
+                // Update available tickets in Event Service
+                $updateUrl = rtrim(config('services.events.base_url'), '/') . config('services.events.routes.update');
+                $updateUrl = str_replace('{id}', $ticket->event_id, $updateUrl);
+                
+                Log::info('Updating event available tickets after cancellation', [
+                    'event_id' => $ticket->event_id,
+                    'current_available' => $event['available_tickets'],
+                    'adding_back' => 1
+                ]);
+
+                $updateResponse = Http::withHeaders([
+                    'X-User-Id' => (string)$user['id'],
+                    'X-User-Role' => strtolower($user['role'])
+                ])->withToken($request->bearerToken())
+                  ->patch($updateUrl, [
+                    'available_tickets' => $event['available_tickets'] + 1
+                ]);
+
+                if (!$updateResponse->successful()) {
+                    throw new \Exception('Failed to update event available tickets');
+                }
+
+                \DB::commit();
+                
+                Log::info('Ticket cancelled successfully and event updated', [
                     'ticket_id' => $ticketId,
                     'user_id' => $user['id'],
-                    'cancelled_at' => $ticket->cancelled_at
+                    'cancelled_at' => $ticket->cancelled_at,
+                    'event_id' => $ticket->event_id
                 ]);
 
                 return response()->json([
@@ -562,7 +606,8 @@ class TicketController extends Controller
                 ]);
 
             } catch (\Exception $e) {
-                Log::error('Failed to cancel ticket', [
+                \DB::rollBack();
+                Log::error('Failed to cancel ticket or update event', [
                     'ticket_id' => $ticketId,
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
@@ -572,7 +617,6 @@ class TicketController extends Controller
                     'message' => 'An error occurred while cancelling the ticket'
                 ], 500);
             }
-
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning('Ticket not found for cancellation', [
                 'ticket_id' => $ticketId
