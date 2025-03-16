@@ -43,6 +43,7 @@ return [
                 'health' => 'GET /health',
                 'login' => 'POST /login',
                 'register' => 'POST /register',
+                'validate' => 'GET /api/user'
             ]
         ],
         'users' => [
@@ -60,10 +61,26 @@ return [
         'events' => [
             'base_url' => env('EVENT_SERVICE_URL', 'http://localhost:8003'),
             'prefix' => 'events',
+            'routes' => [
+                'health' => 'GET /health',
+                'index' => 'GET /',
+                'store' => 'POST /',
+                'show' => 'GET /{id}',
+                'update' => 'PUT /{id}',
+                'delete' => 'DELETE /{id}'
+            ]
         ],
         'tickets' => [
             'base_url' => env('TICKET_SERVICE_URL', 'http://localhost:8004'),
             'prefix' => 'tickets',
+            'routes' => [
+                'health' => 'GET /health',
+                'purchase' => 'POST /purchase',
+                'user-tickets' => 'GET /user/{userId}',
+                'show' => 'GET /{ticketId}',
+                'validate' => 'POST /{ticketId}/validate',
+                'cancel' => 'POST /{ticketId}/cancel'
+            ]
         ],
     ]
 ];

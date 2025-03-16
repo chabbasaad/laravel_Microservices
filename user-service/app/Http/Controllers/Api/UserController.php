@@ -241,15 +241,91 @@ class UserController extends Controller
      */
     public function destroy(string $id): JsonResponse
     {
+        Log::info('Delete user request received', [
+            'target_user_id' => $id,
+            'request_method' => request()->method(),
+            'request_path' => request()->path(),
+            'request_headers' => [
+                'x-user-role' => request()->header('X-User-Role'),
+                'x-user-id' => request()->header('X-User-Id'),
+                'authorization' => request()->header('Authorization') ? 'present' : 'missing'
+            ]
+        ]);
+
         try {
-            $user = User::findOrFail($id);
-            $user->delete();
+            $userRole = request()->user_role;
+            $authenticatedUserId = request()->authenticated_user_id;
+
+            Log::info('Processing delete user request', [
+                'authenticated_user_id' => $authenticatedUserId,
+                'target_user_id' => $id,
+                'user_role' => $userRole,
+                'is_self_delete' => $id === $authenticatedUserId,
+                'is_admin' => $userRole === 'admin'
+            ]);
+
+            // Only admin and the user themselves can delete profiles
+            if ($userRole !== 'admin' && $id !== $authenticatedUserId) {
+                Log::warning('Unauthorized attempt to delete user', [
+                    'authenticated_user_id' => $authenticatedUserId,
+                    'target_user_id' => $id,
+                    'role' => $userRole,
+                    'request_headers' => request()->headers->all()
+                ]);
+                return response()->json([
+                    'message' => 'You do not have permission to delete this user'
+                ], 403);
+            }
+
+            // Try to find the user first
+            try {
+                $user = User::findOrFail($id);
+                Log::info('Found user to delete', [
+                    'user_id' => $user->id,
+                    'user_email' => $user->email,
+                    'user_name' => $user->name
+                ]);
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                Log::error('User not found for deletion', [
+                    'target_user_id' => $id,
+                    'error' => $e->getMessage()
+                ]);
+                return response()->json([
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            // Attempt to delete the user
+            try {
+                $user->delete();
+                Log::info('User deleted successfully', [
+                    'deleted_user_id' => $id,
+                    'deleted_user_email' => $user->email,
+                    'deleted_by_user_id' => $authenticatedUserId,
+                    'role' => $userRole
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to delete user in database', [
+                    'user_id' => $id,
+                    'error_message' => $e->getMessage(),
+                    'error_code' => $e->getCode(),
+                    'error_trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
 
             return response()->json([
                 'message' => 'User deleted successfully'
             ]);
         } catch (\Exception $e) {
-            Log::error('Failed to delete user', ['error' => $e->getMessage(), 'id' => $id]);
+            Log::error('Failed to delete user', [
+                'error_message' => $e->getMessage(),
+                'error_code' => $e->getCode(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'target_user_id' => $id,
+                'stack_trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['message' => 'Failed to delete user'], 500);
         }
     }
