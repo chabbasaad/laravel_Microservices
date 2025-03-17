@@ -137,12 +137,6 @@ class TicketController extends Controller
 
                         $payment->save();
 
-                        Log::debug('Payment Debug', [
-                            'Ticket' => $ticket->toArray(),
-                            'Payment' => $payment->toArray(),
-                            'Payment Details' => $request->payment
-                        ]);
-
                         // Process the payment
                         if ($payment->process($request->payment)) {
                             // Update ticket status to confirmed after successful payment
@@ -153,6 +147,94 @@ class TicketController extends Controller
                             
                             $successfulTickets++;
                             $tickets[] = $ticket->getFullDetails();
+
+                            // Send test notification first
+                            // try {
+                            //     $testUrl = rtrim(config('services.notifications.base_url'), '/') . config('services.notifications.routes.test');
+                                
+                            //     Log::info('Sending test notification', [
+                            //         'url' => $testUrl
+                            //     ]);
+
+                            //     $testResponse = Http::withHeaders([
+                            //         'Accept' => 'application/json',
+                            //         'Content-Type' => 'application/json'
+                            //     ])->get($testUrl);
+
+                            //     Log::info('Test notification response', [
+                            //         'status' => $testResponse->status(),
+                            //         'body' => $testResponse->body()
+                            //     ]);
+
+                            //     if (!$testResponse->successful()) {
+                            //         Log::error('Test notification failed', [
+                            //             'status' => $testResponse->status(),
+                            //             'body' => $testResponse->body()
+                            //         ]);
+                            //     }
+                            // } catch (\Exception $e) {
+                            //     Log::error('Error sending test notification', [
+                            //         'error' => $e->getMessage(),
+                            //         'trace' => $e->getTraceAsString()
+                            //     ]);
+                            // }
+
+                            // Send purchase notification
+                            try {
+                                $notificationUrl = rtrim(config('services.notifications.base_url'), '/') . config('services.notifications.routes.purchase');
+                                
+                                Log::info('Sending purchase notification', [
+                                    'url' => $notificationUrl,
+                                    'data' => [
+                                        'email' => $user['email'],
+                                        'ticket_number' => (string)$ticket->id,  // Convert to string
+                                        'event' => [
+                                            'title' => $event['title'],
+                                            'date' => $event['date'],
+                                            'location' => $event['location']
+                                        ],
+                                        'price' => $event['price'],
+                                        'purchase_date' => now()->format('Y-m-d H:i:s')
+                                    ]
+                                ]);
+
+                                $notificationResponse = Http::withHeaders([
+                                    'Accept' => 'application/json',
+                                    'Content-Type' => 'application/json'
+                                ])->post($notificationUrl, [
+                                    'email' => $user['email'],
+                                    'ticket_number' => (string)$ticket->id,  // Convert to string
+                                    'event' => [
+                                        'title' => $event['title'],
+                                        'date' => $event['date'],
+                                        'location' => $event['location']
+                                    ],
+                                    'price' => $event['price'],
+                                    'purchase_date' => now()->format('Y-m-d H:i:s')
+                                ]);
+
+                                Log::info('Purchase notification response', [
+                                    'status' => $notificationResponse->status(),
+                                    'body' => $notificationResponse->body()
+                                ]);
+
+                                if (!$notificationResponse->successful()) {
+                                    Log::error('Failed to send purchase notification', [
+                                        'ticket_id' => $ticket->id,
+                                        'response' => $notificationResponse->body(),
+                                        'status' => $notificationResponse->status(),
+                                        'url' => $notificationUrl
+                                    ]);
+                                }
+                            } catch (\Exception $e) {
+                                Log::error('Error sending purchase notification', [
+                                    'error' => $e->getMessage(),
+                                    'trace' => $e->getTraceAsString(),
+                                    'ticket_id' => $ticket->id,
+                                    'url' => $notificationUrl ?? 'unknown'
+                                ]);
+                            }
+
                             \DB::commit();
                         } else {
                             \DB::rollBack();
@@ -589,6 +671,97 @@ class TicketController extends Controller
 
                 if (!$updateResponse->successful()) {
                     throw new \Exception('Failed to update event available tickets');
+                }
+
+                // Send test notification first
+                // try {
+                //     $testUrl = rtrim(config('services.notifications.base_url'), '/') . config('services.notifications.routes.test');
+                    
+                //     Log::info('Sending test notification for cancellation', [
+                //         'url' => $testUrl
+                //     ]);
+
+                //     $testResponse = Http::withHeaders([
+                //         'Accept' => 'application/json',
+                //         'Content-Type' => 'application/json'
+                //     ])->get($testUrl);
+
+                //     Log::info('Test notification response for cancellation', [
+                //         'status' => $testResponse->status(),
+                //         'body' => $testResponse->body()
+                //     ]);
+
+                //     if (!$testResponse->successful()) {
+                //         Log::error('Test notification failed for cancellation', [
+                //             'status' => $testResponse->status(),
+                //             'body' => $testResponse->body()
+                //         ]);
+                //     }
+                // } catch (\Exception $e) {
+                //     Log::error('Error sending test notification for cancellation', [
+                //         'error' => $e->getMessage(),
+                //         'trace' => $e->getTraceAsString()
+                //     ]);
+                // }
+
+                // Send cancellation notification
+                try {
+                    $notificationUrl = rtrim(config('services.notifications.base_url'), '/') . config('services.notifications.routes.cancellation');
+                    
+                    // Get ticket without relationship since we already have event data
+                    $ticket = Ticket::find($ticketId);
+                    if (!$ticket) {
+                        throw new \Exception('Ticket not found');
+                    }
+
+                    // We now get email directly from auth service response
+                    if (!isset($user['email'])) {
+                        Log::error('User email not found in auth response', [
+                            'user' => $user,
+                            'ticket_id' => $ticketId
+                        ]);
+                        throw new \Exception('User email not found in auth response');
+                    }
+
+                    $notificationData = [
+                        'email' => $user['email'],
+                        'ticket_number' => (string)$ticket->id,  // Convert to string
+                        'event' => [
+                            'title' => $event['title']
+                        ],
+                        'price' => $ticket->price,
+                        'purchase_date' => $ticket->purchase_date,
+                        'cancelled_at' => now()->format('Y-m-d H:i:s')
+                    ];
+
+                    Log::info('Sending cancellation notification', [
+                        'url' => $notificationUrl,
+                        'data' => $notificationData
+                    ]);
+
+                    $notificationResponse = Http::withHeaders([
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json'
+                    ])->post($notificationUrl, $notificationData);
+
+                    Log::info('Cancellation notification response', [
+                        'status' => $notificationResponse->status(),
+                        'body' => $notificationResponse->body()
+                    ]);
+
+                    if (!$notificationResponse->successful()) {
+                        Log::error('Failed to send cancellation notification', [
+                            'ticket_id' => $ticket->id,
+                            'response' => $notificationResponse->body(),
+                            'status' => $notificationResponse->status()
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error sending cancellation notification', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'ticket_id' => $ticketId
+                    ]);
                 }
 
                 \DB::commit();

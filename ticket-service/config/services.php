@@ -60,4 +60,13 @@ return [
         ]
     ],
 
+    'notifications' => [
+        'base_url' => env('NOTIFICATION_SERVICE_URL', 'http://localhost:8005'),
+        'routes' => [
+            'purchase' => '/api/purchase',
+            'cancellation' => '/api/cancellation',
+            'test' => '/api/test-queue'
+        ]
+    ],
+
 ];

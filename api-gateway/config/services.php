@@ -82,5 +82,15 @@ return [
                 'cancel' => 'POST /{ticketId}/cancel'
             ]
         ],
+        'notifications' => [
+            'base_url' => env('NOTIFICATION_SERVICE_URL', 'http://localhost:8005'),
+            'prefix' => 'notifications',
+            'routes' => [
+                'health' => 'GET /health',
+                'purchase' => 'POST /purchase',
+                'cancellation' => 'POST /cancellation',
+                'test-queue' => 'GET /test-queue'
+            ]
+        ],
     ]
 ];
