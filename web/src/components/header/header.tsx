@@ -7,6 +7,7 @@ import { Dialog } from '../../components/kit-ui/dialog';
 import { useTranslation } from "react-i18next";
 import Languages from "../languages/languages.tsx";
 import { useState } from "react";
+import {fetchUser} from "../../service/services/user-service.tsx";
 
 type NavigationItem = {
   name: string;
@@ -38,6 +39,9 @@ export default function Header() {
     { name: t('nav_home'), href: '/', current: false },
     { name: t('nav_events'), href: '/admin/gestion-event', current: false },
   ];
+
+
+  let userTest= fetchUser(userData?.id);
 
   const navigationLinks = userRole === "admin" ? navigationAdmin : userRole === "event_creator" ? navigationCreator : navigation;
 

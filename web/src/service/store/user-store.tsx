@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import {User} from "../model/user.tsx";
-import {fetchUser, fetchUsers} from "../services/user-service.tsx";
+import {fetchUser, fetchUsers, register} from "../services/user-service.tsx";
 
 interface UserState {
     users: User[];
@@ -18,6 +18,8 @@ const useUserStore = create<UserState>((set) => ({
     users: [],
     userUp: null ,
     loading : false,
+
+
 
     fetchUsers: async () => {
         try {
@@ -41,17 +43,11 @@ const useUserStore = create<UserState>((set) => ({
         }
     },
 
-    createUser: async (params) => {
-        set({ loading: true });
-        try {
-            const response  = await createUser(params);
-            const newUser = response.data;
-            set((state) => ({ users: [...state.users, newUser] }));
-        } catch (error) {
-            console.error(error);
-        } finally {
-            set({ loading: false });
-        }
+    createUser: async (userData) => {
+        await register(userData);
+        set((state) => ({
+            users: [...state.users, userData],
+        }));
     },
 
     updateUser: async (id, params) : Promise<UserUpdateResponseData | null> => {

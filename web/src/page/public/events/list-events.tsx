@@ -9,12 +9,14 @@ export default function ListEvents() {
     const navigate = useNavigate();
 
     const userData = localStorage.getItem("user_data");
+    const token = localStorage.getItem("user_token");
+
     const user = userData ? JSON.parse(userData) as { role?: string } : null;
     const userRole = user?.role || "";
 
     useEffect(() => {
         fetchEvents();
-    }, [events]);
+    }, [events,token]);
 
     const isUserLoggedIn = userRole !== "";
 

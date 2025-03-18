@@ -1,6 +1,6 @@
 import axios, {AxiosError} from "axios";
 import {toast} from "react-toastify";
-import {LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse} from "../model/user.tsx";
+import {LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse, User} from "../model/user.tsx";
 
 
 const API_URL = 'http://localhost:8000/api/v1/';
@@ -22,7 +22,7 @@ export const register = async (params: Omit<RegisterUserRequest, "id">): Promise
             const errorMessages = Object.values(errorData.errors).flat();
             errorMessages.forEach((msg) => toast.error(msg));
         } else {
-            toast.error(errorData.message || "Une erreur est survenue");
+            toast.error(errorData.error|| "Une erreur est survenue");
         }
         throw error;
 
@@ -39,15 +39,16 @@ export const login = async (param: Omit<LoginUserRequest, "id">): Promise<LoginU
             const errorMessages = Object.values(errorData.errors).flat();
             errorMessages.forEach((msg) => toast.error(msg));
         } else {
-            toast.error(errorData.message || "Une erreur est survenue");
+            toast.error(errorData.error || "Une erreur est survenue");
         }
         throw error;
     }
 };
 
-export const fetchUser = async (): Promise<UserFetchResponseData> => {
+export const fetchUser = async (id: number): Promise<User> => {
     try {
-        const response = await axios.get<UserFetchResponseData>(`${API_URL}users/${id}`, { headers: getAuthHeaders() });
+        const response = await axios.get<User>(`${API_URL}users/${id}`, { headers: getAuthHeaders() });
+        console.log(response)
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError && error.response) {

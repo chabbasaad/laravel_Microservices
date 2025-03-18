@@ -148,7 +148,8 @@ export default function Profile() {
                                                     onClick={() => handleDeleteTicket(ticket.id)}
                                                     className="mt-4 px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-800"
                                                 >
-                                                    Supprimer
+                                                    SupprimerNPM RUND EV
+
                                                 </button>
                                             </div>
                                         ))}
