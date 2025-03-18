@@ -49,7 +49,8 @@ class EventController extends Controller
                 'price' => 'required|numeric|min:0',
                 'status' => 'in:draft,published',
                 'speakers' => 'nullable|string',
-                'sponsors' => 'nullable|string'
+                'sponsors' => 'nullable|string',
+                'image' => 'nullable|string|max:255'
             ]);
 
             if ($validator->fails()) {
@@ -70,7 +71,8 @@ class EventController extends Controller
                 'creator_id' => $user->id,
                 'status' => $request->status ?? 'draft',
                 'speakers' => $request->speakers,
-                'sponsors' => $request->sponsors
+                'sponsors' => $request->sponsors,
+                'image' => $request->image
             ]);
 
             Log::info('Event created successfully', [
@@ -153,7 +155,8 @@ class EventController extends Controller
                 'price' => 'numeric|min:0',
                 'status' => 'in:draft,published,cancelled',
                 'speakers' => 'nullable|string',
-                'sponsors' => 'nullable|string'
+                'sponsors' => 'nullable|string',
+                'image' => 'nullable|string|max:255'
             ]);
 
             if ($validator->fails()) {

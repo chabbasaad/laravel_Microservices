@@ -21,7 +21,8 @@ class Event extends Model
         'creator_id',
         'status',
         'speakers',
-        'sponsors'
+        'sponsors',
+        'image'
     ];
 
     protected $casts = [

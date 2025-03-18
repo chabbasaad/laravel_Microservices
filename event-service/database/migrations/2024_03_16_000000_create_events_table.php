@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description');
+            $table->string('image')->nullable();
             $table->dateTime('date');
             $table->string('location');
             $table->integer('max_tickets');
