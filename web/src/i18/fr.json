@@ -1,0 +1,30 @@
+{
+  "home": "Accueil",
+  "title1": "Découvrez et réservez vos événements préférés",
+  "title2": "Concerts, festivals, conférences, spectacles… Trouvez et réservez vos billets en ligne en quelques clics. Vivez des expériences inoubliables avec notre plateforme !",
+  "event": "Evénements",
+  "event-title": "Trouvez et réservez vos billets\n",
+
+  "loading": "Chargement...",
+  "no_events": "Aucun événement disponible.",
+  "unknown_speaker": "Intervenant inconnu",
+
+  "please_log_in_to_view": "Veuillez vous connecter pour voir les événements",
+
+
+
+
+  "nav_home": "Accueil",
+  "nav_event": "Événements",
+  "nav_users": "Gestion des utilisateurs",
+  "nav_events": "Gestion des événements",
+  "nav_tickets": "Gestion des tickets",
+  "open_menu": "Ouvrir le menu",
+  "profile": "Profil",
+  "logout": "Se déconnecter",
+  "register": "Inscription",
+  "login": "Connexion",
+
+
+  "add-event" : "Ajouter un Evenement"
+}

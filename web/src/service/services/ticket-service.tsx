@@ -1,0 +1,70 @@
+import axios, {AxiosError} from "axios";
+import {toast} from "react-toastify";
+import {TicketResponse} from "../model/event.tsx";
+import {Event} from "../model/event.tsx";
+import {CreateTicketRequest, CreateTicketResponse} from "../model/ticket.tsx";
+
+
+const API_URL = 'http://localhost:8000/api/v1/';
+
+const getAuthHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem("user_token")}`,
+    "Content-Type": "application/json",
+});
+
+
+
+export const fetchTickets = async (id : number): Promise<TicketResponse> => {
+    try {
+        const response = await axios.get<TicketResponse>(`${API_URL}tickets/user/${id}`, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError && error.response) {
+            const errorMessage = error.response.data?.message || "Une erreur est survenue";
+            console.log(errorMessage)
+        } else {
+            toast.error("Erreur inconnue");
+        }
+        throw error;
+    }
+};
+
+
+export const createTicket = async (params: CreateTicketRequest): Promise<CreateTicketResponse> => {
+    try {
+        const response = await axios.post<CreateTicketResponse>(`${API_URL}tickets/purchase`,params, { headers: getAuthHeaders() });
+        toast.success("Success");
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError && error.response) {
+            const errorData = error.response.data;
+            if (errorData.errors) {
+                const errorMessages = Object.values(errorData.errors).flat();
+                errorMessages.forEach((msg) => toast.error(msg));
+            } else {
+                toast.error(errorData.message || "Une erreur est survenue");
+            }
+        } else {
+            toast.error("Erreur inconnue");
+        }
+        throw error;
+    }
+};
+
+
+export const deleteTicket = async (id: number): Promise<Event> => {
+    try {
+        const response = await axios.delete<Event>(`${API_URL}tickets/${id}/cancel`, { headers: getAuthHeaders() });
+        toast.success("Success");
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError && error.response) {
+            const errorMessage = error.response.data?.message || "Une erreur est survenue";
+            toast.error(errorMessage)
+        } else {
+            toast.error("Erreur inconnue");
+        }
+        throw error;
+    }
+};
+

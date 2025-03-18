@@ -1,0 +1,29 @@
+{
+  "home": "Home",
+  "title1": "Discover and book your favorite events",
+  "title2": "Concerts, festivals, conferences, shows... Find and book your tickets online in just a few clicks. Live unforgettable experiences with our platform!",
+  "event": "Event",
+  "event-title": "Find and book your tickets",
+
+  "loading": "Loading...",
+  "no_events": "No events available.",
+  "unknown_speaker": "Unknown speaker",
+
+
+  "please_log_in_to_view": "Please log in to view the events",
+
+
+
+  "nav_home": "Home",
+  "nav_event": "Events",
+  "nav_users": "User Management",
+  "nav_events": "Event Management",
+  "nav_tickets": "Ticket Management",
+  "open_menu": "Open menu",
+  "profile": "Profile",
+  "logout": "Logout",
+  "register": "Sign Up",
+  "login": "Login",
+
+  "add-event" : "Ajouter un Evenement"
+}

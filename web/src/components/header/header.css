@@ -1,0 +1,11 @@
+.modal-login-register{
+    z-index: 11; /* Définit un z-index pour garantir que c'est au-dessus des autres éléments */
+    position: fixed; /* Positionne le Dialog de manière fixe pour qu'il soit au-dessus */
+    top: 0; /* Place le Dialog en haut de l'écran */
+    left: 0; /* Aligne le Dialog à gauche de l'écran */
+    right: 0; /* Assure-toi que le Dialog couvre toute la largeur de l'écran */
+    bottom: 0; /* Assure-toi que le Dialog couvre toute la hauteur de l'écran */
+    display: flex; /* Utilisé pour centrer le contenu du Dialog */
+    justify-content: center; /* Centre horizontalement le contenu du Dialog */
+    alignItems: "center"
+}
