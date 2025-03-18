@@ -20,11 +20,45 @@
   "nav_events": "Gestion des événements",
   "nav_tickets": "Gestion des tickets",
   "open_menu": "Ouvrir le menu",
-  "profile": "Profil",
   "logout": "Se déconnecter",
   "register": "Inscription",
   "login": "Connexion",
 
 
-  "add-event" : "Ajouter un Evenement"
+  "add-event" : "Ajouter un evenement",
+  "add-user" : "Ajouter un utilisateur",
+  "title-profile" : "Modifiez vos informations personnelles.",
+
+
+  "profile": {
+    "title": "Profil",
+    "date-create-profile": "Date de création",
+    "name": "Nom",
+    "email": "Email",
+    "password": "Nouveau mot de passe",
+    "save": "Sauvegarder",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "no_user_info": "Aucune information utilisateur trouvée."
+  },
+
+  "tickets": {
+    "title": "Mes Tickets",
+    "description": "Retrouvez ici tous vos tickets.",
+    "loading": "Chargement des tickets...",
+    "no_tickets": "Aucun ticket trouvé.",
+    "ticket_number": "Ticket n°",
+    "event_name": "Nom de l'événement",
+    "price": "Prix",
+    "created_at": "Créé le",
+    "delete": "Supprimer",
+    "status" : "Status de ticket",
+    "purchase_date" : "Date d'achat",
+    "add" : "Ajouter un Ticket"
+  },
+
+  "users": {
+    "title": "Utilisateur"
+  }
+
 }

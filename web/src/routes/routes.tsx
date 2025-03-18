@@ -5,6 +5,8 @@ import Profile from "../page/profile/profile.tsx";
 import OverviewEventWrapper from "../page/public/events/overview-event-wrapper.tsx";
 import AuthGuardAdmin from "./auth-guard-admin.tsx";
 import ListEventsAdmin from "../page/admin/event/list-events-admin.tsx";
+import ListUserAdmin from "../page/admin/user/list-user-admin.tsx";
+import ListTicketsAdmin from "../page/admin/tickets/list-tickets-admin.tsx";
 
 
 const AppRoutes = () => {
@@ -31,23 +33,23 @@ const AppRoutes = () => {
                     </AuthGuardAdmin>
                 }
             />
-    {/*
+
             <Route
                 path="/admin/gestion-users"
                 element={
                     <AuthGuardAdmin>
-                        <UsersList />
+                        <ListUserAdmin />
                     </AuthGuardAdmin>
                 }
             />
             <Route
-                path="/admin/gestion-booking"
+                path="/admin/gestion-tickets"
                 element={
                     <AuthGuardAdmin>
-                        <BookingList />
+                            <ListTicketsAdmin/>
                     </AuthGuardAdmin>
                 }
-            />*/}
+            />
         </Routes>
     );
 };

@@ -48,7 +48,6 @@ export const login = async (param: Omit<LoginUserRequest, "id">): Promise<LoginU
 export const fetchUser = async (id: number): Promise<User> => {
     try {
         const response = await axios.get<User>(`${API_URL}users/${id}`, { headers: getAuthHeaders() });
-        console.log(response)
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError && error.response) {
@@ -61,9 +60,9 @@ export const fetchUser = async (id: number): Promise<User> => {
     }
 };
 
-export const fetchUsers = async (): Promise<UserFetchResponseData> => {
+export const fetchUsers = async (): Promise<User[]> => {
     try {
-        const response = await axios.get<UserFetchResponseData>(`${API_URL}users`, { headers: getAuthHeaders() });
+        const response = await axios.get<User[]>(`${API_URL}users`, { headers: getAuthHeaders() });
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError && error.response) {
@@ -76,10 +75,9 @@ export const fetchUsers = async (): Promise<UserFetchResponseData> => {
     }
 };
 
-export const updateUser = async (id: number, params: UserUpdateRequestData): Promise<UserUpdateResponseData> => {
+export const updateUser = async (id: number, params: any): Promise<any> => {
     try {
-
-        const response = await axios.put<UserUpdateResponseData>(`${API_URL}users/${id}`, params, { headers: getAuthHeaders() });
+        const response = await axios.put<any>(`${API_URL}users/${id}`, params, { headers: getAuthHeaders() });
         toast.success(response.data.message);
         return response.data;
 

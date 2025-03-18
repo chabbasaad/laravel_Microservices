@@ -6,8 +6,7 @@ import Register from "../../connexion/register/register";
 import { Dialog } from '../../components/kit-ui/dialog';
 import { useTranslation } from "react-i18next";
 import Languages from "../languages/languages.tsx";
-import { useState } from "react";
-import {fetchUser} from "../../service/services/user-service.tsx";
+import { useState} from "react";
 
 type NavigationItem = {
   name: string;
@@ -40,14 +39,10 @@ export default function Header() {
     { name: t('nav_events'), href: '/admin/gestion-event', current: false },
   ];
 
-
-  let userTest= fetchUser(userData?.id);
-
   const navigationLinks = userRole === "admin" ? navigationAdmin : userRole === "event_creator" ? navigationCreator : navigation;
 
   const handleLogout = () => {
     localStorage.removeItem("user_token");
-    localStorage.removeItem("user_data");
     window.location.reload();
   };
 
@@ -107,7 +102,7 @@ export default function Header() {
                         <MenuItem>
                           {({active}) => (
                               <Link to="/profile" className={`block px-4 py-2 text-sm ${active ? 'bg-gray-100' : ''}`}>
-                                {t("profile")}
+                                {t("profile.title")}
                               </Link>
                           )}
                         </MenuItem>

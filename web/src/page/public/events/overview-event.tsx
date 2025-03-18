@@ -10,6 +10,8 @@ export default function OverviewEvent({ event }) {
     const [expiry, setExpiry] = useState('');
     const [cvv, setCvv] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const userData = localStorage.getItem("user_data");
+    const user = userData ? JSON.parse(userData) as { role?: string } : null;
 
     const handleQuantityChange = (e) => {
         setQuantity(e.target.value);
@@ -29,7 +31,7 @@ export default function OverviewEvent({ event }) {
             }
         };
 
-        createTicket(paymentData)
+        createTicket(user?.id,paymentData)
         setIsSubmitting(false);
     };
 

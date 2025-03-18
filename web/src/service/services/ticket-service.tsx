@@ -52,9 +52,9 @@ export const createTicket = async (params: CreateTicketRequest): Promise<CreateT
 };
 
 
-export const deleteTicket = async (id: number): Promise<Event> => {
+export const deleteTicket = async (id: number,params : any): Promise<Event> => {
     try {
-        const response = await axios.delete<Event>(`${API_URL}tickets/${id}/cancel`, { headers: getAuthHeaders() });
+        const response = await axios.post<Event>(`${API_URL}tickets/${id}/cancel`, params,{ headers: getAuthHeaders() });
         toast.success("Success");
         return response.data;
     } catch (error) {

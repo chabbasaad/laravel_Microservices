@@ -1,22 +1,24 @@
 import { useState } from "react";
 import useUserStore from "../../../service/store/user-store.tsx";
-import { UserCreateRequest } from "../../../service/model/user.tsx"; // Assure-toi que ce modèle est bien défini dans ton projet
+import {RegisterUserRequest} from "../../../service/model/user.tsx";
+
+
 
 export default function CreateUserAdmin({ setIsOpenCreate }: { setIsOpenCreate: (open: boolean) => void }) {
     const { createUser } = useUserStore();
 
-    const defaultUserData: UserCreateRequest = {
+    const defaultUserData: RegisterUserRequest = {
         name: "John Doe",
         email: "john.doe@example.com",
         password: "password123",
         password_confirmation: "password123",
     };
 
-    const [userData, setUserData] = useState<UserCreateRequest>(defaultUserData);
+    const [userData, setUserData] = useState<any>(defaultUserData);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setUserData((prev) => ({ ...prev, [name]: value }));
+        setUserData((prev  : any) => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = () => {

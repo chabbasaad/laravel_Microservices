@@ -8,8 +8,8 @@ interface TicketState {
     ticketUser : Ticket[];
     loading: boolean;
     fetchTickets: (id : number) => Promise<void>;
-    createTicket: (params : CreateTicketRequest) => Promise<void>;
-    deleteTicket: (id : number) => Promise<void>;
+    createTicket: (id : number,params : CreateTicketRequest) => Promise<void>;
+    deleteTicket: (id : number,params : any) => Promise<void>;
 }
 
 const useTicketStore = create<TicketState>((set) => ({
@@ -21,32 +21,26 @@ const useTicketStore = create<TicketState>((set) => ({
     fetchTickets: async (id) => {
         try {
             const response = await fetchTickets(id);
-            const newTickets = Array.isArray(response) ? response : [response];
-
-            set((state) => {
-                const existingTicketIds = state.ticketUser.map((ticket) => ticket.id);
-                const uniqueNewTickets = newTickets.filter((ticket) => !existingTicketIds.includes(ticket.id));
-
-                return { ticketUser: [...state.ticketUser, ...uniqueNewTickets] };
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    },
-
-    createTicket: async (params) : Promise<void>  => {
-        try {
-            const response = await createTicket(params);
-            const tickets = response.tickets
+            const tickets = response
             set({ tickets });
         } catch (error) {
             console.error(error);
         }
     },
 
-    deleteTicket: async (id) => {
+    createTicket: async (id,params) : Promise<void>  => {
         try {
-            await deleteTicket(id);
+            const response = await createTicket(params);
+            const tickets = await fetchTickets(id);
+            set({ tickets });
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    deleteTicket: async (id,params) => {
+        try {
+            await deleteTicket(id,params);
             set((state) => ({
                 ticketUser: state.ticketUser.filter((h) => h.id !== id),
                 ticket: state.ticket?.id === id ? null : state.ticket,

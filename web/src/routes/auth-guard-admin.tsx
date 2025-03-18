@@ -9,7 +9,7 @@ const isAuthenticated = () => {
 
     try {
         const user = JSON.parse(userData);
-        return user?.role === "admin";
+        return user?.role === "admin" || user?.role === "event_creator";
     } catch (error) {
         console.error("Erreur de parsing des données utilisateur :", error);
         return false;

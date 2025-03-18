@@ -2,8 +2,8 @@ import { useTranslation } from "react-i18next";
 import useUserStore from "../../../service/store/user-store";
 import { useEffect, useState } from "react";
 import { Dialog } from "../../../components/kit-ui/dialog";
-import CreateUserAdmin from "./CreateUserAdmin";
-import UpdateUserAdmin from "./UpdateUserAdmin";
+import UpdateUserAdmin from "./update-user-admin.tsx";
+import CreateUserAdmin from "./create-user-admin.tsx";
 
 export default function ListUserAdmin() {
     const { t } = useTranslation();
@@ -35,8 +35,7 @@ export default function ListUserAdmin() {
         <div className="px-4 sm:px-6 lg:px-8 mt-20">
             <div className="sm:flex sm:items-center">
                 <div className="sm:flex-auto">
-                    <h1 className="text-base font-semibold text-gray-900">{t("user")}</h1>
-                    <p className="mt-2 text-sm text-gray-700">{t("user-title")}</p>
+                    <h1 className="text-base font-semibold text-gray-900">{t("users.title")}</h1>
                 </div>
                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                     <button
@@ -62,7 +61,7 @@ export default function ListUserAdmin() {
                                     {t("email")}
                                 </th>
                                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    {t("role")}
+                                    {t("create_date")}
                                 </th>
                                 <th scope="col" className="relative py-3.5 pr-4 pl-3 sm:pr-3">
                                     <span className="sr-only">{t("edit")}</span>
@@ -81,7 +80,7 @@ export default function ListUserAdmin() {
                                             {user.name}
                                         </td>
                                         <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">{user.email}</td>
-                                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">{user.role}</td>
+                                        <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">{user.created_at}</td>
                                         <td className="relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-3">
                                             <button
                                                 onClick={() => handleDelete(user.id)}

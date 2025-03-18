@@ -1,12 +1,10 @@
 import { useState } from "react";
 import {toast} from "react-toastify";
-import useUserStore from "../../service/store/user-store.tsx";
 import {login} from "../../service/services/user-service.tsx";
 
 export default function Login({ closeModal }: { closeModal: () => void }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const {   fetchUser } = useUserStore();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

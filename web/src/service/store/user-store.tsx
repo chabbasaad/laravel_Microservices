@@ -1,22 +1,23 @@
 import { create } from "zustand";
-import {User} from "../model/user.tsx";
-import {fetchUser, fetchUsers, register} from "../services/user-service.tsx";
+import {RegisterUserRequest, User} from "../model/user.tsx";
+import {fetchUser, fetchUsers, register, updateUser} from "../services/user-service.tsx";
 
 interface UserState {
     users: User[];
-    userUp: User | null;
+    user: User | null;
     loading: boolean;
     fetchUsers: () => Promise<void>;
-    fetchUser: (params : UserLogin) => Promise<UserLoginResponseData | null>;
-    createUser : (params: UserCreateRequestData) => Promise<void>;
-    updateUser : (id: number, params : UserUpdateRequestData)=> Promise<UserUpdateResponseData | null>;
+    fetchUser: (id : number,role : string | undefined) => Promise<User | null>;
+    createUser : (params: RegisterUserRequest) => Promise<void>;
+    updateUser : (id: number, params : any)=> Promise<void>;
     deleteUser: (id: number) => Promise<void>;
+    resetStore : () => void;
 
 }
 
 const useUserStore = create<UserState>((set) => ({
     users: [],
-    userUp: null ,
+    user: null ,
     loading : false,
 
 
@@ -31,11 +32,11 @@ const useUserStore = create<UserState>((set) => ({
         }
     },
 
-    fetchUser: async (params): Promise<UserLoginResponseData | null> => {
+    fetchUser: async (id,role): Promise<User | null> => {
         try {
-            const response = await fetchUser(params);
-            const userUp = response.user
-            set({ userUp });
+            const response = await fetchUser(id);
+            const user = { ...response, role };
+            set({ user });
             return response;
         } catch (error) {
             console.error(error);
@@ -44,20 +45,20 @@ const useUserStore = create<UserState>((set) => ({
     },
 
     createUser: async (userData) => {
-        await register(userData);
+        const response = await register(userData);
         set((state) => ({
-            users: [...state.users, userData],
+            users: [...state.users, response.data.user],
         }));
     },
 
-    updateUser: async (id, params) : Promise<UserUpdateResponseData | null> => {
+    updateUser: async (id, params)  => {
         set({ loading: true });
         try {
             const response  = await updateUser(id, params);
             const updatedUser = response.data;
             set((state ) => ({
-                users: state.users.map((h) => (h.id === id ? updatedUser : h)),
-                userUp: updatedUser,
+                users: state.users.map((h) => (h.id === id ? params : h)),
+                user: params,
             }));
             return response;
         } catch (error) {
@@ -81,6 +82,10 @@ const useUserStore = create<UserState>((set) => ({
         } finally {
             set({ loading: false });
         }
+    },
+
+    resetStore: () => {
+        set({ user: null, loading: false });
     },
 
 }));
