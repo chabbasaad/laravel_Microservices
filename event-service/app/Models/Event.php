@@ -29,9 +29,7 @@ class Event extends Model
         'price' => 'decimal:2',
         'max_tickets' => 'integer',
         'available_tickets' => 'integer',
-        'creator_id' => 'integer',
-        'speakers' => 'array',
-        'sponsors' => 'array'
+        'creator_id' => 'integer'
     ];
 
     protected $hidden = [
@@ -44,28 +42,46 @@ class Event extends Model
     protected static function boot()
     {
         parent::boot();
+    }
 
-        static::creating(function ($event) {
-            // Add IDs to speakers if present
-            if (!empty($event->speakers)) {
-                $speakerId = 1;
-                $speakers = $event->speakers;
-                foreach ($speakers as &$speaker) {
-                    $speaker['id'] = $speakerId++;
-                }
-                $event->speakers = $speakers;
-            }
+    /**
+     * Get speakers as array
+     */
+    public function getSpeakersArray(): array
+    {
+        return array_map('trim', explode(',', $this->speakers ?? ''));
+    }
 
-            // Add IDs to sponsors if present
-            if (!empty($event->sponsors)) {
-                $sponsorId = 1;
-                $sponsors = $event->sponsors;
-                foreach ($sponsors as &$sponsor) {
-                    $sponsor['id'] = $sponsorId++;
-                }
-                $event->sponsors = $sponsors;
-            }
-        });
+    /**
+     * Get sponsors as array
+     */
+    public function getSponsorsArray(): array
+    {
+        return array_map('trim', explode(',', $this->sponsors ?? ''));
+    }
+
+    /**
+     * Set speakers from array
+     */
+    public function setSpeakersAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['speakers'] = implode(', ', $value);
+        } else {
+            $this->attributes['speakers'] = $value;
+        }
+    }
+
+    /**
+     * Set sponsors from array
+     */
+    public function setSponsorsAttribute($value)
+    {
+        if (is_array($value)) {
+            $this->attributes['sponsors'] = implode(', ', $value);
+        } else {
+            $this->attributes['sponsors'] = $value;
+        }
     }
 
     /**
@@ -104,167 +120,5 @@ class Event extends Model
 
         return $user->role === 'admin' || 
                ($user->role === 'event_creator' && $this->creator_id == $user->id);
-    }
-
-    /**
-     * Get main sponsors of the event
-     */
-    public function getMainSponsors(): array
-    {
-        return array_filter($this->sponsors ?? [], function($sponsor) {
-            return ($sponsor['type'] ?? '') === 'main';
-        });
-    }
-
-    /**
-     * Get regular sponsors of the event
-     */
-    public function getRegularSponsors(): array
-    {
-        return array_filter($this->sponsors ?? [], function($sponsor) {
-            return ($sponsor['type'] ?? '') === 'regular';
-        });
-    }
-
-    /**
-     * Get platinum tier sponsors
-     */
-    public function getPlatinumSponsors(): array
-    {
-        return array_filter($this->sponsors ?? [], function($sponsor) {
-            return ($sponsor['tier'] ?? '') === 'platinum';
-        });
-    }
-
-    /**
-     * Add a speaker to the event
-     */
-    public function addSpeaker(array $speaker)
-    {
-        $speakers = $this->speakers ?? [];
-        $maxId = 0;
-        
-        // Find the highest existing ID
-        foreach ($speakers as $existingSpeaker) {
-            if (isset($existingSpeaker['id']) && $existingSpeaker['id'] > $maxId) {
-                $maxId = $existingSpeaker['id'];
-            }
-        }
-        
-        // Add auto-incrementing ID
-        $speaker['id'] = $maxId + 1;
-        $speakers[] = $speaker;
-        
-        $this->speakers = $speakers;
-        $this->save();
-        
-        return $speaker;
-    }
-
-    /**
-     * Update speaker information
-     */
-    public function updateSpeaker($speakerId, array $data)
-    {
-        $speakers = $this->speakers ?? [];
-        $updated = false;
-
-        foreach ($speakers as &$speaker) {
-            if ($speaker['id'] == $speakerId) {
-                $speaker = array_merge($speaker, $data);
-                $updated = true;
-                break;
-            }
-        }
-
-        if (!$updated) {
-            throw new \Exception('Speaker not found');
-        }
-
-        $this->speakers = $speakers;
-        $this->save();
-    }
-
-    /**
-     * Remove a speaker from the event
-     */
-    public function removeSpeaker($speakerId)
-    {
-        $speakers = $this->speakers ?? [];
-        $filtered = array_filter($speakers, function($speaker) use ($speakerId) {
-            return $speaker['id'] != $speakerId;
-        });
-
-        if (count($filtered) === count($speakers)) {
-            throw new \Exception('Speaker not found');
-        }
-
-        $this->speakers = array_values($filtered);
-        $this->save();
-    }
-
-    /**
-     * Add a sponsor to the event
-     */
-    public function addSponsor(array $sponsor)
-    {
-        $sponsors = $this->sponsors ?? [];
-        $maxId = 0;
-        
-        foreach ($sponsors as $existingSponsor) {
-            if (isset($existingSponsor['id']) && $existingSponsor['id'] > $maxId) {
-                $maxId = $existingSponsor['id'];
-            }
-        }
-        
-        $sponsor['id'] = $maxId + 1;
-        $sponsors[] = $sponsor;
-        
-        $this->sponsors = $sponsors;
-        $this->save();
-        
-        return $sponsor;
-    }
-
-    /**
-     * Update sponsor information
-     */
-    public function updateSponsor($sponsorId, array $data)
-    {
-        $sponsors = $this->sponsors ?? [];
-        $updated = false;
-
-        foreach ($sponsors as &$sponsor) {
-            if ($sponsor['id'] == $sponsorId) {
-                $sponsor = array_merge($sponsor, $data);
-                $updated = true;
-                break;
-            }
-        }
-
-        if (!$updated) {
-            throw new \Exception('Sponsor not found');
-        }
-
-        $this->sponsors = $sponsors;
-        $this->save();
-    }
-
-    /**
-     * Remove a sponsor from the event
-     */
-    public function removeSponsor($sponsorId)
-    {
-        $sponsors = $this->sponsors ?? [];
-        $filtered = array_filter($sponsors, function($sponsor) use ($sponsorId) {
-            return $sponsor['id'] != $sponsorId;
-        });
-
-        if (count($filtered) === count($sponsors)) {
-            throw new \Exception('Sponsor not found');
-        }
-
-        $this->sponsors = array_values($filtered);
-        $this->save();
     }
 }

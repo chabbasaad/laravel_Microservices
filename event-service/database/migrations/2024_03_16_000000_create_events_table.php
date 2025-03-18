@@ -20,11 +20,9 @@ return new class extends Migration
             $table->unsignedBigInteger('creator_id');
             $table->enum('status', ['draft', 'published', 'cancelled', 'completed'])->default('draft');
             
-            // Speakers information
-            $table->json('speakers')->nullable()->comment('Array of speakers with their details: [{"name", "bio", "photo_url", "company", "position", "topic", "speaking_time"}]');
-            
-            // Sponsors information
-            $table->json('sponsors')->nullable()->comment('Array of sponsors with their details: [{"name", "logo_url", "website_url", "tier", "type"}]');
+            // Simple text fields for speakers and sponsors
+            $table->text('speakers')->nullable()->comment('Comma-separated list of speakers');
+            $table->text('sponsors')->nullable()->comment('Comma-separated list of sponsors');
             
             $table->timestamps();
             

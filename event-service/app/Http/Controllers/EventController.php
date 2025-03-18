@@ -48,20 +48,8 @@ class EventController extends Controller
                 'max_tickets' => 'required|integer|min:1',
                 'price' => 'required|numeric|min:0',
                 'status' => 'in:draft,published',
-                'speakers' => 'array|nullable',
-                'speakers.*.name' => 'required|string',
-                'speakers.*.bio' => 'required|string',
-                'speakers.*.photo_url' => 'required|url',
-                'speakers.*.company' => 'required|string',
-                'speakers.*.position' => 'required|string',
-                'speakers.*.topic' => 'required|string',
-                'speakers.*.speaking_time' => 'required|date_format:H:i',
-                'sponsors' => 'array|nullable',
-                'sponsors.*.name' => 'required|string',
-                'sponsors.*.logo_url' => 'required|url',
-                'sponsors.*.website_url' => 'required|url',
-                'sponsors.*.tier' => 'required|in:platinum,gold,silver,bronze',
-                'sponsors.*.type' => 'required|in:main,regular'
+                'speakers' => 'nullable|string',
+                'sponsors' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -164,20 +152,8 @@ class EventController extends Controller
                 'max_tickets' => 'integer|min:' . $event->max_tickets - ($event->max_tickets - $event->available_tickets),
                 'price' => 'numeric|min:0',
                 'status' => 'in:draft,published,cancelled',
-                'speakers' => 'array|nullable',
-                'speakers.*.name' => 'string',
-                'speakers.*.bio' => 'string',
-                'speakers.*.photo_url' => 'url',
-                'speakers.*.company' => 'string',
-                'speakers.*.position' => 'string',
-                'speakers.*.topic' => 'string',
-                'speakers.*.speaking_time' => 'date_format:H:i',
-                'sponsors' => 'array|nullable',
-                'sponsors.*.name' => 'string',
-                'sponsors.*.logo_url' => 'url',
-                'sponsors.*.website_url' => 'url',
-                'sponsors.*.tier' => 'in:platinum,gold,silver,bronze',
-                'sponsors.*.type' => 'in:main,regular'
+                'speakers' => 'nullable|string',
+                'sponsors' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -202,29 +178,65 @@ class EventController extends Controller
     public function destroy(Request $request, $id)
     {
         try {
-            $event = Event::findOrFail($id);
+            // First check if the user is authenticated
             $user = Auth::user();
+            if (!$user) {
+                return response()->json(['error' => 'Unauthorized access'], 401);
+            }
+
+            // Try to find the event
+            $event = Event::find($id);
+            if (!$event) {
+                return response()->json(['error' => 'Event not found', 'event_id' => $id], 404);
+            }
             
+            // Check authorization
             if (!$event->canBeManageBy($user)) {
                 return response()->json(['error' => 'Unauthorized to delete this event'], 403);
             }
             
+            // Check if event has sold tickets
             if ($event->max_tickets !== $event->available_tickets) {
                 return response()->json(['error' => 'Cannot delete event with sold tickets'], 422);
             }
 
-            $event->delete();
+            // Store event details before deletion
+            $eventDetails = [
+                'id' => $event->id,
+                'title' => $event->title
+            ];
+
+            // Delete the event
+            $deleted = $event->delete();
+            
+            if (!$deleted) {
+                throw new \Exception('Failed to delete event from database');
+            }
             
             Log::info('Event deleted successfully', [
                 'event_id' => $id,
+                'event_title' => $eventDetails['title'],
                 'deleter_id' => $user->id,
                 'deleter_role' => $user->role
             ]);
             
-            return response()->json(null, 204);
+            return response()->json([
+                'message' => 'Event deleted successfully',
+                'event' => $eventDetails
+            ], 200);
+
         } catch (\Exception $e) {
-            Log::error('Failed to delete event: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to delete event'], 500);
+            Log::error('Failed to delete event', [
+                'error_message' => $e->getMessage(),
+                'event_id' => $id,
+                'user_id' => $user->id ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to delete event',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
