@@ -7,27 +7,31 @@ import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function ListTicketsAdmin() {
     const { t } = useTranslation();
-    const { tickets, fetchTickets, deleteTicket, isLoading } = useTicketStore(); // Ajout de `isLoading`
+    const { tickets, fetchTickets, deleteTicket, isLoading } = useTicketStore();
     const [isOpenCreate, setIsOpenCreate] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [deletingTicketId, setDeletingTicketId] = useState<number | null>(null);
-
     const userData = localStorage.getItem("user_data");
-    const user = userData ? JSON.parse(userData) as { id?: number, role?: string } : null;
+    const userLocal = userData ? JSON.parse(userData) : "";
+    const id = typeof userLocal === "object" && userLocal !== null ? userLocal?.id : undefined;
+
+
+
+
 
     useEffect(() => {
         const loadTickets = async () => {
             try {
-                await fetchTickets(user?.id);
+                await fetchTickets(id);
             } catch (error) {
                 console.error("Erreur lors de la récupération des tickets", error);
             }
         };
 
-        if (user?.id) {
+        if (id) {
             loadTickets();
         }
-    }, [user?.id]);
+    }, [id]);
 
     const handleDeleteTicket = async (ticketId: number, eventId: number, quantity: number) => {
         if (!window.confirm(t("confirm_delete"))) return;
@@ -109,7 +113,7 @@ export default function ListTicketsAdmin() {
                                     </td>
                                 </tr>
                             ) : (
-                                tickets.map((ticket) => (
+                                tickets.map((ticket : any) => (
                                     <tr key={ticket.id} className="even:bg-gray-50">
                                         <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-3">
                                             {ticket.ticket_number}

@@ -33,7 +33,7 @@ const useTicketStore = create<TicketState>((set) => ({
 
     createTicket: async (id,params) : Promise<void>  => {
         try {
-            const response = await createTicket(params);
+             await createTicket(params);
             const tickets = await fetchTickets(id);
             set({ tickets });
         } catch (error) {

@@ -59,7 +59,7 @@ const useUserStore = create<UserState>((set) => ({
         set({ loading: true });
         try {
             const response  = await updateUser(id, params);
-            const updatedUser = response.data;
+
             set((state ) => ({
                 users: state.users.map((h) => (h.id === id ? params : h)),
                 user: params,

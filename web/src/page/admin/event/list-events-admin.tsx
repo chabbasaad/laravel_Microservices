@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import useEventStore from "../../../service/store/event-store.tsx";
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { Dialog } from "../../../components/kit-ui/dialog";
 import CreateEventsAdmin from "./create-events-admin.tsx";
 import UpdateEventAdmin from "./update-event-admin.tsx";

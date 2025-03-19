@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { UserCircleIcon, TicketIcon } from "@heroicons/react/24/outline";
 import useUserStore from "../../service/store/user-store.tsx";
 import useTicketStore from "../../service/store/ticket-store.tsx";
-import { Ticket } from "../../service/model/ticket.tsx";
 import { useTranslation } from "react-i18next";
 import Spinner from "../../components/sniper/sniper.tsx";
 
@@ -17,7 +16,8 @@ export default function Profile() {
     const { user, updateUser, fetchUser } = useUserStore();
     const { tickets, fetchTickets, deleteTicket, loading } = useTicketStore();
     const userData = localStorage.getItem("user_data");
-    const userLocal = userData ? JSON.parse(userData) as { role?: string } : null;
+    const userLocal = userData ? JSON.parse(userData) : "";
+
     const [editMode, setEditMode] = useState(false);
     const [currentNavigation, setCurrentNavigation] = useState("General");
     const [formData, setFormData] = useState({
@@ -25,10 +25,10 @@ export default function Profile() {
         email: user?.email || "",
         password: "",
     });
-    const [isDeleting, setIsDeleting] = useState(false); // Ajout de l'état pour la suppression
-    const role = userLocal?.role;
-    const id = userLocal?.id;
+    const [isDeleting, setIsDeleting] = useState(false);
 
+    const role = typeof userLocal === "object" && userLocal !== null ? userLocal?.role : undefined;
+    const id = typeof userLocal === "object" && userLocal !== null ? userLocal?.id : undefined;
     useEffect(() => {
         fetchTickets(id);
         fetchUser(id, role);
@@ -64,7 +64,7 @@ export default function Profile() {
     };
 
     const handleSubmit = async () => {
-        await updateUser(user.id, formData);
+        await updateUser(id | 1, formData);
         setEditMode(false);
     };
 
@@ -206,7 +206,7 @@ export default function Profile() {
                                 <p className="mt-4 text-gray-900">{t("tickets.no_tickets")}</p>
                             ) : (
                                 <div className="mt-4 space-y-4">
-                                    {tickets.map((ticket: Ticket) => (
+                                    {tickets.map((ticket: any) => (
                                         <div key={ticket.id} className="p-4 border rounded-lg bg-gray-100">
                                             <p className="font-semibold text-gray-900">{t("tickets.ticket_number")}
                                                 #{ticket.ticket_number}</p>

@@ -5,8 +5,7 @@ import {Event} from "../model/event.tsx";
 import {CreateTicketRequest, CreateTicketResponse} from "../model/ticket.tsx";
 
 
-const API_URL = 'http://localhost:8000/api/v1/';
-
+const API_URL = import.meta.env.VITE_API_URL;
 const getAuthHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem("user_token")}`,
     "Content-Type": "application/json",
@@ -41,7 +40,7 @@ export const createTicket = async (params: CreateTicketRequest): Promise<CreateT
             const errorData = error.response.data;
             if (errorData.errors) {
                 const errorMessages = Object.values(errorData.errors).flat();
-                errorMessages.forEach((msg) => toast.error(msg));
+                errorMessages.forEach((msg : any) => toast.error(msg));
             } else {
                 toast.error(errorData.message || error.response.data.error);
             }

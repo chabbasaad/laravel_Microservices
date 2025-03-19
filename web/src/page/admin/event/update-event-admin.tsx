@@ -4,7 +4,7 @@ import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, setIsOpenUpdate: (open: boolean) => void }) {
     const { updateEvent, events } = useEventStore();
-    const [eventData, setEventData] = useState({
+    const [eventData, setEventData] = useState<any>({
         title: "",
         description: "",
         status: "",

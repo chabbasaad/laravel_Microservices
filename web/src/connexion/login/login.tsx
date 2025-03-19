@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
 import { login } from "../../service/services/user-service.tsx";
 
 export default function Login({ closeModal }: { closeModal: () => void }) {

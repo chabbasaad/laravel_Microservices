@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 
 export default function Languages() {
-    const { t, i18n } = useTranslation();
+    const {  i18n } = useTranslation();
 
     const changeLanguage = (lang: string) => {
         i18n.changeLanguage(lang);

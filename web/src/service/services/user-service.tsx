@@ -3,8 +3,7 @@ import {toast} from "react-toastify";
 import {LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse, User} from "../model/user.tsx";
 
 
-const API_URL = 'http://localhost:8000/api/v1/';
-console.log(API_URL)
+const API_URL = import.meta.env.VITE_API_URL;
 
 const getAuthHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem("user_token")}`,
@@ -16,11 +15,11 @@ export const register = async (params: Omit<RegisterUserRequest, "id">): Promise
         const response = await axios.post<RegisterUserResponse>(API_URL +'auth/register', params);
         toast.success(response.data.message);
         return response.data;
-    }catch (error) {
+    }catch (error : any) {
         const errorData = error.response.data;
         if (errorData.errors) {
             const errorMessages = Object.values(errorData.errors).flat();
-            errorMessages.forEach((msg) => toast.error(msg));
+            errorMessages.forEach((msg : any) => toast.error(msg));
         } else {
             toast.error(errorData.error||  error.response.data.error);
         }
@@ -33,11 +32,11 @@ export const login = async (param: Omit<LoginUserRequest, "id">): Promise<LoginU
     try {
         const response = await axios.post<LoginUserResponse>(API_URL + `auth/login`,param)
         return response.data;
-    } catch (error) {
+    } catch (error : any) {
         const errorData = error.response.data;
         if (errorData.errors) {
             const errorMessages = Object.values(errorData.errors).flat();
-            errorMessages.forEach((msg) => toast.error(msg));
+            errorMessages.forEach((msg : any) => toast.error(msg));
         } else {
             toast.error(errorData.error ||  error.response.data.error);
         }
@@ -60,9 +59,9 @@ export const fetchUser = async (id: number): Promise<User> => {
     }
 };
 
-export const fetchUsers = async (): Promise<User[]> => {
+export const fetchUsers = async (): Promise<any> => {
     try {
-        const response = await axios.get<User[]>(`${API_URL}users`, { headers: getAuthHeaders() });
+        const response = await axios.get<any>(`${API_URL}users`, { headers: getAuthHeaders() });
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError && error.response) {

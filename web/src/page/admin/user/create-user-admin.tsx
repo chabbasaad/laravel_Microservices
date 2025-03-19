@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import useUserStore from "../../../service/store/user-store.tsx";
 import { RegisterUserRequest } from "../../../service/model/user.tsx";
-import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function CreateUserAdmin({ setIsOpenCreate }: { setIsOpenCreate: (open: boolean) => void }) {
     const { createUser } = useUserStore();

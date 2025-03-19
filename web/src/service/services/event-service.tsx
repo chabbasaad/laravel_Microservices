@@ -1,11 +1,10 @@
 import axios, {AxiosError} from "axios";
 import {toast} from "react-toastify";
-import {EventCreateRequest, EventUpdateRequest, FetchEventsResponse} from "../model/event.tsx";
+import {EventCreateRequest, FetchEventsResponse} from "../model/event.tsx";
 import {Event} from "../model/event.tsx";
 
 
-const API_URL = 'http://localhost:8000/api/v1/';
-
+const API_URL = import.meta.env.VITE_API_URL;
 const getAuthHeaders = () => ({
     Authorization: `Bearer ${localStorage.getItem("user_token")}`,
     "Content-Type": "application/json",
@@ -55,7 +54,7 @@ export const createEvent = async (params: EventCreateRequest): Promise<Event> =>
             const errorData = error.response.data;
             if (errorData.errors) {
                 const errorMessages = Object.values(errorData.errors).flat();
-                errorMessages.forEach((msg) => toast.error(msg));
+                errorMessages.forEach((msg : any) => toast.error(msg));
             } else {
                 toast.error(errorData.message || "Une erreur est survenue");
             }
@@ -83,7 +82,7 @@ export const deleteEvent = async (id: number): Promise<Event> => {
     }
 };
 
-export const updateEvent = async (id: number, params: EventUpdateRequest): Promise<Event> => {
+export const updateEvent = async (id: number, params: any): Promise<Event> => {
     try {
         const response = await axios.put<Event>(`${API_URL}events/${id}`, params, { headers: getAuthHeaders() });
         toast.success("Success");

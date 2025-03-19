@@ -9,14 +9,9 @@ export default function ListEvents() {
     const navigate = useNavigate();
     const userData = localStorage.getItem("user_data");
 
-    const user = userData ? JSON.parse(userData) as { role?: string } : null;
-    const userRole = user?.role || "";
-
     useEffect(() => {
         fetchEvents();
     }, []);
-
-    const isUserLoggedIn = userRole !== "";
 
     return (
         <div className="bg-white py-24 sm:py-10">
@@ -45,7 +40,7 @@ export default function ListEvents() {
                                 onClick={() => navigate(`/event/${event.id}`)}
                             >
                                 <img
-                                    src={event.image || "default-image.jpg"} // Replace with a fallback image if no image is provided
+                                    src={event.image || "default-image.jpg"}
                                     alt={event.title}
                                     className="object-cover w-full h-60 sm:h-80 lg:h-96 rounded-2xl"
                                 />

@@ -1,9 +1,25 @@
 import { useState } from 'react';
 import { CloudArrowUpIcon, LockClosedIcon, ServerIcon } from '@heroicons/react/20/solid';
 import useTicketStore from "../../../service/store/ticket-store.tsx";
-import {CreateTicketRequest} from "../../../service/model/ticket.tsx";
+import { CreateTicketRequest } from "../../../service/model/ticket.tsx";
 
-export default function OverviewEvent({ event }) {
+interface Event {
+    id: number;
+    title: string;
+    description: string;
+    date: string;
+    location: string;
+    available_tickets: number;
+    speakers: string;
+    sponsors: string;
+    [key: string]: any; // Allow other properties to be dynamically added if necessary
+}
+
+interface OverviewEventProps {
+    event: Event; // Define the type of the 'event' prop here
+}
+
+export default function OverviewEvent({ event }: OverviewEventProps) {
     const { createTicket } = useTicketStore();
     const [quantity, setQuantity] = useState(1);  // Default ticket quantity
     const [cardNumber, setCardNumber] = useState('');
@@ -11,27 +27,28 @@ export default function OverviewEvent({ event }) {
     const [cvv, setCvv] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const userData = localStorage.getItem("user_data");
-    const user = userData ? JSON.parse(userData) as { role?: string } : null;
+    const userLocal = userData ? JSON.parse(userData) : "";
+    const id = typeof userLocal === "object" && userLocal !== null ? userLocal?.id : undefined;
 
-    const handleQuantityChange = (e) => {
+    const handleQuantityChange = (e: any) => {
         setQuantity(e.target.value);
     };
 
-    const handlePaymentSubmit = async (e) => {
+    const handlePaymentSubmit = async (e: any) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        const paymentData : CreateTicketRequest = {
+        const paymentData: CreateTicketRequest = {
             event_id: event.id,
             quantity,
             payment: {
                 card_number: cardNumber,
                 expiry,
-                cvv
-            }
+                cvv,
+            },
         };
 
-        createTicket(user?.id,paymentData)
+        createTicket(id, paymentData);
         setIsSubmitting(false);
     };
 

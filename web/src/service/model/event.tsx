@@ -1,5 +1,6 @@
 
 export interface Event {
+    image: string;
     id: number;
     title: string;
     description: string;
@@ -10,8 +11,8 @@ export interface Event {
     price: string;
     creator_id: number;
     status: string;
-    speakers: Speaker[];
-    sponsors: Sponsor[];
+    speakers: string;
+    sponsors: string;
     created_at: string;
     updated_at: string;
 }

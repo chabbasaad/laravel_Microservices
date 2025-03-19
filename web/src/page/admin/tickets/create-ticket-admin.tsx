@@ -1,12 +1,11 @@
 import { useState } from "react";
 import useTicketStore from "../../../service/store/ticket-store.tsx";
 import { CreateTicketRequest } from "../../../service/model/ticket.tsx";
-import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function CreateTicketAdmin({ setIsOpenCreate }: { setIsOpenCreate: (open: boolean) => void }) {
     const { createTicket } = useTicketStore();
     const userData = localStorage.getItem("user_data");
-    const user = userData ? JSON.parse(userData) as { role?: string } : null;
+    const user = userData ? JSON.parse(userData) as { role?: string,id :number } : null;
     const [loading, setLoading] = useState(false); // Ajout du spinner d'état
 
     const defaultTicketData: CreateTicketRequest = {
@@ -33,14 +32,11 @@ export default function CreateTicketAdmin({ setIsOpenCreate }: { setIsOpenCreate
 
     const handleSubmit = async () => {
         setLoading(true); // Active le spinner
-        console.log("Ticket data:", ticketData);
         if (user?.id) {
             await createTicket(user.id, ticketData);
             setIsOpenCreate(false);
-        } else {
-            console.error("Utilisateur non trouvé !");
         }
-        setLoading(false); // Désactive le spinner après la requête
+        setLoading(false);
     };
 
     // Validation function to check if all fields are filled

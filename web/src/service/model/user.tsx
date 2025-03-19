@@ -16,7 +16,7 @@ export interface User {
     "preferences": null | string,
     "is_active": null | string,
     "last_activity": null | string
-    "role" : string;
+    "role" : string | undefined;
 }
 
 export interface RegisterUserRequest {
