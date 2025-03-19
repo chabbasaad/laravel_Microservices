@@ -112,3 +112,6 @@ export interface TicketResponse {
     }
 }
 
+export type TicketResponseArray = TicketResponse[];
+
+

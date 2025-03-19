@@ -1,39 +1,58 @@
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import useTicketStore from "../../../service/store/ticket-store";
-import {Dialog} from "../../../components/kit-ui/dialog.tsx";
+import { Dialog } from "../../../components/kit-ui/dialog.tsx";
 import CreateTicketAdmin from "./create-ticket-admin.tsx";
+import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function ListTicketsAdmin() {
     const { t } = useTranslation();
-    const { tickets, fetchTickets, deleteTicket } = useTicketStore();
+    const { tickets, fetchTickets, deleteTicket, isLoading } = useTicketStore(); // Ajout de `isLoading`
     const [isOpenCreate, setIsOpenCreate] = useState(false);
-    const userData = localStorage.getItem("user_data");
-    const user = userData ? JSON.parse(userData) as { role?: string } : null;
-
     const [isDeleting, setIsDeleting] = useState(false);
+    const [deletingTicketId, setDeletingTicketId] = useState<number | null>(null);
+
+    const userData = localStorage.getItem("user_data");
+    const user = userData ? JSON.parse(userData) as { id?: number, role?: string } : null;
 
     useEffect(() => {
-        fetchTickets(user?.id);
-    }, [fetchTickets]);
-
-
-    const handleDeleteTicket = (ticketId: number, eventId: number, quantity: number) => {
-        const params = {
-            event_id: eventId,
-            quantity: quantity,
-            payment: {
-                card_number: "4111111111111111",
-                expiry: "12/25",
-                cvv: "123"
+        const loadTickets = async () => {
+            try {
+                await fetchTickets(user?.id);
+            } catch (error) {
+                console.error("Erreur lors de la récupération des tickets", error);
             }
         };
 
-        deleteTicket(ticketId, params);
+        if (user?.id) {
+            loadTickets();
+        }
+    }, [user?.id]);
+
+    const handleDeleteTicket = async (ticketId: number, eventId: number, quantity: number) => {
+        if (!window.confirm(t("confirm_delete"))) return;
+
+        setIsDeleting(true);
+        setDeletingTicketId(ticketId);
+        try {
+            const params = {
+                event_id: eventId,
+                quantity: quantity,
+                payment: {
+                    card_number: "4111111111111111",
+                    expiry: "12/25",
+                    cvv: "123"
+                }
+            };
+
+            await deleteTicket(ticketId, params);
+        } catch (error) {
+            console.error("Erreur lors de la suppression du ticket", error);
+        } finally {
+            setIsDeleting(false);
+            setDeletingTicketId(null);
+        }
     };
-
-
-    console.log(tickets)
 
     return (
         <div className="px-4 sm:px-6 lg:px-8 mt-20">
@@ -77,9 +96,17 @@ export default function ListTicketsAdmin() {
                             </tr>
                             </thead>
                             <tbody className="bg-white">
-                            {tickets.length === 0 ? (
+                            {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="py-4 text-center text-sm text-gray-500">{t("tickets.no_tickets")}</td>
+                                    <td colSpan={6} className="py-4 text-center text-sm text-gray-500">
+                                        <Spinner />
+                                    </td>
+                                </tr>
+                            ) : tickets.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="py-4 text-center text-sm text-gray-500">
+                                        {t("tickets.no_tickets")}
+                                    </td>
                                 </tr>
                             ) : (
                                 tickets.map((ticket) => (
@@ -94,7 +121,7 @@ export default function ListTicketsAdmin() {
                                             ${ticket.price}
                                         </td>
                                         <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">
-                                             {ticket.status}
+                                            {ticket.status}
                                         </td>
                                         <td className="px-3 py-4 text-sm whitespace-nowrap text-gray-500">
                                             {new Date(ticket.purchase_date).toLocaleDateString()}
@@ -104,11 +131,17 @@ export default function ListTicketsAdmin() {
                                                 <button
                                                     onClick={() => handleDeleteTicket(ticket.id, ticket.event.id, ticket.quantity)}
                                                     className="mt-4 px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-800"
+                                                    disabled={isDeleting || deletingTicketId === ticket.id}
                                                 >
+                                                    {isDeleting && deletingTicketId === ticket.id ? (
+                                                        <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4l-3 3-3-3h4z"></path>
+                                                        </svg>
+                                                    ) : null}
                                                     {t("tickets.delete")}
                                                 </button>
                                             )}
-
                                         </td>
                                     </tr>
                                 ))
@@ -118,10 +151,10 @@ export default function ListTicketsAdmin() {
                     </div>
                 </div>
             </div>
+
             <Dialog className="mt-20" open={isOpenCreate} onClose={() => setIsOpenCreate(false)}>
                 <CreateTicketAdmin setIsOpenCreate={setIsOpenCreate} />
             </Dialog>
-
         </div>
     );
 }

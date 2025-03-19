@@ -22,7 +22,7 @@ export const register = async (params: Omit<RegisterUserRequest, "id">): Promise
             const errorMessages = Object.values(errorData.errors).flat();
             errorMessages.forEach((msg) => toast.error(msg));
         } else {
-            toast.error(errorData.error|| "Une erreur est survenue");
+            toast.error(errorData.error||  error.response.data.error);
         }
         throw error;
 
@@ -39,7 +39,7 @@ export const login = async (param: Omit<LoginUserRequest, "id">): Promise<LoginU
             const errorMessages = Object.values(errorData.errors).flat();
             errorMessages.forEach((msg) => toast.error(msg));
         } else {
-            toast.error(errorData.error || "Une erreur est survenue");
+            toast.error(errorData.error ||  error.response.data.error);
         }
         throw error;
     }

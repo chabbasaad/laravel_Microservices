@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import {RegisterUserRequest, User} from "../model/user.tsx";
-import {fetchUser, fetchUsers, register, updateUser} from "../services/user-service.tsx";
+import {deleteUser, fetchUser, fetchUsers, register, updateUser} from "../services/user-service.tsx";
 
 interface UserState {
     users: User[];
     user: User | null;
     loading: boolean;
+    isLoading : boolean;
     fetchUsers: () => Promise<void>;
     fetchUser: (id : number,role : string | undefined) => Promise<User | null>;
     createUser : (params: RegisterUserRequest) => Promise<void>;
@@ -19,18 +20,21 @@ const useUserStore = create<UserState>((set) => ({
     users: [],
     user: null ,
     loading : false,
+    isLoading : false,
 
 
 
     fetchUsers: async () => {
+        set({ isLoading: true });
         try {
             const response = await fetchUsers();
-            const users = response.data
-            set({ users });
+            set({ users: response.data, isLoading: false });
         } catch (error) {
             console.error(error);
+            set({ isLoading: false });
         }
     },
+
 
     fetchUser: async (id,role): Promise<User | null> => {
         try {
@@ -75,7 +79,7 @@ const useUserStore = create<UserState>((set) => ({
             await deleteUser(id);
             set((state) => ({
                 users: state.users.filter((h) => h.id !== id),
-                user: state.userUp?.id === id ? null : state.userUp,
+                user: state.user?.id === id ? null : state.user,
             }));
         } catch (error) {
             console.error("Erreur lors de la suppression de l'hôtel:", error);

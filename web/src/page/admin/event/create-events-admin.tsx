@@ -19,24 +19,33 @@ export default function CreateEventsAdmin({ setIsOpenCreate }: { setIsOpenCreate
     };
 
     const [eventData, setEventData] = useState<EventCreateRequest>(defaultEventData);
+    const [isLoading, setIsLoading] = useState<boolean>(false); // Ajouter un état de chargement
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setEventData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         console.log("Event data:", eventData);
-        createEvent(eventData);
-        setIsOpenCreate(false);
+
+        setIsLoading(true); // Commencer le chargement
+        try {
+            await createEvent(eventData); // Attendre que l'événement soit créé
+            setIsOpenCreate(false); // Fermer le modal une fois l'événement créé
+        } catch (error) {
+            console.error("Erreur lors de la création de l'événement", error);
+        } finally {
+            setIsLoading(false); // Fin du chargement
+        }
     };
 
-    // Validation function to check if all fields are filled
+    // Validation pour vérifier si tous les champs sont remplis
     const isFormValid = Object.values(eventData).every((value) => value !== "" && value !== null);
 
     return (
-        <div className="max-w-2xl mx-auto bg-white rounded-lg ">
-            <h2 className="text-2xl font-bold  text-gray-900">Ajouter un événement</h2>
+        <div className="max-w-2xl mx-auto bg-white rounded-lg p-5">
+            <h2 className="text-2xl font-bold text-gray-900">Ajouter un événement</h2>
             <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -131,10 +140,16 @@ export default function CreateEventsAdmin({ setIsOpenCreate }: { setIsOpenCreate
 
                 <button
                     onClick={handleSubmit}
-                    disabled={!isFormValid}  // Disable button if the form is not valid
-                    className={`w-full p-2 rounded ${isFormValid ? "bg-gray-950 text-white hover:bg-gray-800" : "bg-gray-400 text-gray-700 cursor-not-allowed"}`}
+                    disabled={!isFormValid || isLoading}
+                    className={`w-full p-2 rounded ${isFormValid && !isLoading ? "bg-gray-950 text-white hover:bg-gray-800" : "bg-gray-400 text-gray-700 cursor-not-allowed"}`}
                 >
-                    Ajouter l'événement
+                    {isLoading ? (
+                        <div className="flex justify-center items-center">
+                            <span className="ml-2">Chargement...</span>
+                        </div>
+                    ) : (
+                        "Ajouter l'événement"
+                    )}
                 </button>
             </div>
         </div>

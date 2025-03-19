@@ -6,6 +6,7 @@ interface EventState {
     events: Event[];
     event: Event | null;
     loading: boolean;
+    isLoading : boolean,
     fetchEvents: () => Promise<void>;
     fetchEvent: (id : number) => Promise<Event | null>;
     createEvent: (params : EventCreateRequest) => Promise<Event | null>;
@@ -19,14 +20,16 @@ const useEventStore = create<EventState>((set) => ({
     events: [],
     event: null ,
     loading : false,
+    isLoading : false,
 
     fetchEvents: async () => {
+        set({ isLoading: true });
         try {
             const response = await fetchEvents();
-            const events = response.data
-            set({ events });
+            set({ events: response.data, isLoading: false });
         } catch (error) {
             console.error(error);
+            set({ isLoading: false });
         }
     },
 

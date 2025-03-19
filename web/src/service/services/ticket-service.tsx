@@ -14,9 +14,9 @@ const getAuthHeaders = () => ({
 
 
 
-export const fetchTickets = async (id : number): Promise<TicketResponse> => {
+export const fetchTickets = async (id : number): Promise<TicketResponse[]> => {
     try {
-        const response = await axios.get<TicketResponse>(`${API_URL}tickets/user/${id}`, { headers: getAuthHeaders() });
+        const response = await axios.get<TicketResponse[]>(`${API_URL}tickets/user/${id}`, { headers: getAuthHeaders() });
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError && error.response) {
@@ -36,13 +36,14 @@ export const createTicket = async (params: CreateTicketRequest): Promise<CreateT
         toast.success("Success");
         return response.data;
     } catch (error) {
+        console.log(error)
         if (error instanceof AxiosError && error.response) {
             const errorData = error.response.data;
             if (errorData.errors) {
                 const errorMessages = Object.values(errorData.errors).flat();
                 errorMessages.forEach((msg) => toast.error(msg));
             } else {
-                toast.error(errorData.message || "Une erreur est survenue");
+                toast.error(errorData.message || error.response.data.error);
             }
         } else {
             toast.error("Erreur inconnue");

@@ -1,8 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import useUserStore from "../../../service/store/user-store.tsx";
-import {RegisterUserRequest} from "../../../service/model/user.tsx";
-
-
+import { RegisterUserRequest } from "../../../service/model/user.tsx";
+import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function CreateUserAdmin({ setIsOpenCreate }: { setIsOpenCreate: (open: boolean) => void }) {
     const { createUser } = useUserStore();
@@ -15,19 +14,28 @@ export default function CreateUserAdmin({ setIsOpenCreate }: { setIsOpenCreate: 
     };
 
     const [userData, setUserData] = useState<any>(defaultUserData);
+    const [isLoading, setIsLoading] = useState<boolean>(false); // État pour gérer le chargement
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setUserData((prev  : any) => ({ ...prev, [name]: value }));
+        setUserData((prev: any) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         console.log("User data:", userData);
-        createUser(userData);
-        setIsOpenCreate(false);
+
+        setIsLoading(true); // Démarrer le chargement
+        try {
+            await createUser(userData); // Attendre la création de l'utilisateur
+            setIsOpenCreate(false); // Fermer le modal une fois l'utilisateur créé
+        } catch (error) {
+            console.error("Erreur lors de la création de l'utilisateur", error);
+        } finally {
+            setIsLoading(false); // Terminer le chargement
+        }
     };
 
-    // Validation function to check if all fields are filled and passwords match
+    // Validation pour s'assurer que tous les champs sont remplis et que les mots de passe correspondent
     const isFormValid = Object.values(userData).every((value) => value !== "") && userData.password === userData.password_confirmation;
 
     return (
@@ -80,10 +88,16 @@ export default function CreateUserAdmin({ setIsOpenCreate }: { setIsOpenCreate: 
 
                 <button
                     onClick={handleSubmit}
-                    disabled={!isFormValid}  // Disable button if the form is not valid
-                    className={`w-full p-2 rounded ${isFormValid ? "bg-gray-950 text-white hover:bg-gray-800" : "bg-gray-400 text-gray-700 cursor-not-allowed"}`}
+                    disabled={!isFormValid || isLoading}
+                    className={`w-full p-2 rounded ${isFormValid && !isLoading ? "bg-gray-950 text-white hover:bg-gray-800" : "bg-gray-400 text-gray-700 cursor-not-allowed"}`}
                 >
-                    Ajouter l'utilisateur
+                    {isLoading ? (
+                        <div className="flex justify-center items-center">
+                            <span className="ml-2">Chargement...</span>
+                        </div>
+                    ) : (
+                        "Ajouter l'utilisateur"
+                    )}
                 </button>
             </div>
         </div>

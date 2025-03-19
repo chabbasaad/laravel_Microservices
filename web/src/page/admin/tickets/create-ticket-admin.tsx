@@ -1,11 +1,14 @@
 import { useState } from "react";
 import useTicketStore from "../../../service/store/ticket-store.tsx";
 import { CreateTicketRequest } from "../../../service/model/ticket.tsx";
+import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function CreateTicketAdmin({ setIsOpenCreate }: { setIsOpenCreate: (open: boolean) => void }) {
     const { createTicket } = useTicketStore();
     const userData = localStorage.getItem("user_data");
     const user = userData ? JSON.parse(userData) as { role?: string } : null;
+    const [loading, setLoading] = useState(false); // Ajout du spinner d'état
+
     const defaultTicketData: CreateTicketRequest = {
         event_id: 1,
         quantity: 1,
@@ -28,10 +31,16 @@ export default function CreateTicketAdmin({ setIsOpenCreate }: { setIsOpenCreate
         }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        setLoading(true); // Active le spinner
         console.log("Ticket data:", ticketData);
-        createTicket(user?.id,ticketData);
-        setIsOpenCreate(false);
+        if (user?.id) {
+            await createTicket(user.id, ticketData);
+            setIsOpenCreate(false);
+        } else {
+            console.error("Utilisateur non trouvé !");
+        }
+        setLoading(false); // Désactive le spinner après la requête
     };
 
     // Validation function to check if all fields are filled
@@ -101,10 +110,16 @@ export default function CreateTicketAdmin({ setIsOpenCreate }: { setIsOpenCreate
 
                 <button
                     onClick={handleSubmit}
-                    disabled={!isFormValid}
-                    className={`w-full p-2 rounded ${isFormValid ? "bg-gray-950 text-white hover:bg-gray-800" : "bg-gray-400 text-gray-700 cursor-not-allowed"}`}
+                    disabled={!isFormValid || loading}
+                    className={`w-full p-2 rounded font-semibold transition duration-200 ${
+                        isFormValid && !loading ? "bg-gray-950 text-white hover:bg-gray-800" : "bg-gray-400 text-gray-700 cursor-not-allowed"
+                    }`}
                 >
-                    Acheter le ticket
+                    {loading ? (
+                        <div className="flex items-center justify-center">
+                            Chargement...
+                        </div>
+                    ) : "Acheter le ticket"}
                 </button>
             </div>
         </div>

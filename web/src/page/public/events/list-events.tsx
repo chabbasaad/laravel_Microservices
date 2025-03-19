@@ -7,16 +7,14 @@ export default function ListEvents() {
     const { t } = useTranslation();
     const { events, fetchEvents, loading } = useEventStore();
     const navigate = useNavigate();
-
     const userData = localStorage.getItem("user_data");
-    const token = localStorage.getItem("user_token");
 
     const user = userData ? JSON.parse(userData) as { role?: string } : null;
     const userRole = user?.role || "";
 
     useEffect(() => {
         fetchEvents();
-    }, [events,token]);
+    }, []);
 
     const isUserLoggedIn = userRole !== "";
 
@@ -30,7 +28,7 @@ export default function ListEvents() {
                     <p className="mt-2 text-lg text-gray-600">{t("event-title")}</p>
                 </div>
 
-                {!isUserLoggedIn ? (
+                {!userData ? (
                     <p className="text-center text-red-800 mt-10 text-lg text-gray-500">
                         {t("please_log_in_to_view")}
                     </p>

@@ -1,13 +1,14 @@
 import { useTranslation } from "react-i18next";
 import useUserStore from "../../../service/store/user-store";
-import { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { Dialog } from "../../../components/kit-ui/dialog";
 import UpdateUserAdmin from "./update-user-admin.tsx";
 import CreateUserAdmin from "./create-user-admin.tsx";
+import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function ListUserAdmin() {
     const { t } = useTranslation();
-    const { users, fetchUsers, deleteUser } = useUserStore();
+    const { users, fetchUsers, deleteUser, isLoading } = useUserStore();
 
     const [isOpenCreate, setIsOpenCreate] = useState(false);
     const [isOpenUpdate, setIsOpenUpdate] = useState(false);
@@ -26,8 +27,7 @@ export default function ListUserAdmin() {
     const handleDelete = (userId: number) => {
         if (window.confirm(t("confirm_delete"))) {
             setIsDeleting(true);
-            deleteUser(userId);
-            setIsDeleting(false);
+            deleteUser(userId).finally(() => setIsDeleting(false));
         }
     };
 
@@ -69,7 +69,13 @@ export default function ListUserAdmin() {
                             </tr>
                             </thead>
                             <tbody className="bg-white">
-                            {users.length === 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={4} className="py-4 text-center text-sm text-gray-500">
+                                        <Spinner />
+                                    </td>
+                                </tr>
+                            ) : users.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="py-4 text-center text-sm text-gray-500">{t("no_users")}</td>
                                 </tr>

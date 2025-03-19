@@ -7,6 +7,7 @@ interface TicketState {
     ticket : Ticket | null;
     ticketUser : Ticket[];
     loading: boolean;
+    isLoading : boolean,
     fetchTickets: (id : number) => Promise<void>;
     createTicket: (id : number,params : CreateTicketRequest) => Promise<void>;
     deleteTicket: (id : number,params : any) => Promise<void>;
@@ -17,14 +18,16 @@ const useTicketStore = create<TicketState>((set) => ({
     ticket: null ,
     ticketUser : [],
     loading : false,
+    isLoading : false,
 
     fetchTickets: async (id) => {
+         set({ isLoading: true });
         try {
             const response = await fetchTickets(id);
-            const tickets = response
-            set({ tickets });
+            set({ tickets: response, isLoading: false });
         } catch (error) {
             console.error(error);
+            set({ isLoading: false });
         }
     },
 

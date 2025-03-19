@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import useEventStore from "../../../service/store/event-store.tsx";
+import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, setIsOpenUpdate: (open: boolean) => void }) {
     const { updateEvent, events } = useEventStore();
@@ -7,7 +8,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
         title: "",
         description: "",
         status: "",
-        date: "2025-06-15T09:00:00",
+        date: "2025-06-15",
         location: "Convention Center",
         max_tickets: 500,
         price: 99.99,
@@ -15,6 +16,8 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
         sponsors: "test",
         image: "test"
     });
+
+    const [isLoading, setIsLoading] = useState(false); // État pour le chargement
 
     useEffect(() => {
         const selectedEvent = events.find(event => event.id === id);
@@ -41,15 +44,24 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
         });
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        updateEvent(id, eventData);
-        setIsOpenUpdate(false);
+        setIsLoading(true); // Activer le chargement
+        try {
+            await updateEvent(id, eventData); // Mettre à jour l'événement
+            setIsOpenUpdate(false); // Fermer le modal après succès
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour :", error);
+        } finally {
+            setIsLoading(false); // Désactiver le chargement
+        }
     };
 
     return (
-        <div className="max-w-2xl mx-auto bg-white rounded-lg ">
-            <h2 className="text-2xl font-semibold  text-gray-900 text-center">Modifier un Événement</h2>
+        <div className="max-w-2xl mx-auto bg-white rounded-lg p-5">
+            <h2 className="text-2xl font-semibold text-gray-900 text-center">
+                Modifier un Événement
+            </h2>
             <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -60,7 +72,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.title}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -72,11 +84,11 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.date}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
-                    <div>
+                    <div className="col-span-2">
                         <label className="block text-gray-700 font-medium">Description</label>
                         <textarea
                             name="description"
@@ -84,7 +96,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             onChange={handleChange}
                             rows={4}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -96,7 +108,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.status}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -108,7 +120,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.location}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -120,7 +132,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.max_tickets}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -132,7 +144,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.price}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -144,7 +156,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.speakers}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -156,7 +168,7 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.sponsors}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
 
@@ -168,16 +180,21 @@ export default function UpdateEventAdmin({ id, setIsOpenUpdate }: { id: number, 
                             value={eventData.image}
                             onChange={handleChange}
                             required
-                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 placeholder-gray-400 focus:outline-indigo-600"
+                            className="m-2 block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-gray-300 focus:outline-indigo-600"
                         />
                     </div>
                 </div>
 
                 <button
                     type="submit"
-                    className="w-full bg-gray-950 text-white py-2 rounded-lg font-semibold transition duration-200 hover:bg-gray-800"
+                    disabled={isLoading}
+                    className={`w-full py-2 rounded-lg font-semibold transition duration-200 ${
+                        isLoading
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-gray-950 text-white hover:bg-gray-800"
+                    }`}
                 >
-                    Mettre à jour l'événement
+                    {isLoading ? <Spinner /> : "Mettre à jour l'événement"}
                 </button>
             </form>
         </div>

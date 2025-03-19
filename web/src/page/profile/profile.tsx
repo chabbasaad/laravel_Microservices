@@ -1,9 +1,10 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { UserCircleIcon, TicketIcon } from "@heroicons/react/24/outline";
 import useUserStore from "../../service/store/user-store.tsx";
 import useTicketStore from "../../service/store/ticket-store.tsx";
 import { Ticket } from "../../service/model/ticket.tsx";
-import {useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
+import Spinner from "../../components/sniper/sniper.tsx";
 
 const secondaryNavigation = [
     { name: "General", href: "#", icon: UserCircleIcon },
@@ -13,8 +14,8 @@ const secondaryNavigation = [
 export default function Profile() {
     const { t } = useTranslation();
 
-    const { user, updateUser,fetchUser } = useUserStore();
-    const { tickets, fetchTickets,deleteTicket, loading } = useTicketStore();
+    const { user, updateUser, fetchUser } = useUserStore();
+    const { tickets, fetchTickets, deleteTicket, loading } = useTicketStore();
     const userData = localStorage.getItem("user_data");
     const userLocal = userData ? JSON.parse(userData) as { role?: string } : null;
     const [editMode, setEditMode] = useState(false);
@@ -24,21 +25,21 @@ export default function Profile() {
         email: user?.email || "",
         password: "",
     });
-    const role = userLocal?.role ;
+    const [isDeleting, setIsDeleting] = useState(false); // Ajout de l'état pour la suppression
+    const role = userLocal?.role;
     const id = userLocal?.id;
 
     useEffect(() => {
-        fetchTickets(id)
-        fetchUser(id,role);
+        fetchTickets(id);
+        fetchUser(id, role);
     }, []);
-
-
 
     const handleNavigationClick = (name: string) => {
         setCurrentNavigation(name);
     };
 
-    const handleDeleteTicket = (ticketId: number, eventId: number, quantity: number) => {
+    const handleDeleteTicket = async (ticketId: number, eventId: number, quantity: number) => {
+        setIsDeleting(true); // Démarre la suppression
         const params = {
             event_id: eventId,
             quantity: quantity,
@@ -49,7 +50,13 @@ export default function Profile() {
             }
         };
 
-        deleteTicket(ticketId, params);
+        try {
+            await deleteTicket(ticketId, params); // Suppression du ticket
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsDeleting(false); // Fin de la suppression
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,13 +216,16 @@ export default function Profile() {
                                             {ticket.status !== "cancelled" && (
                                                 <button
                                                     onClick={() => handleDeleteTicket(ticket.id, ticket.event.id, ticket.quantity)}
+                                                    disabled={isDeleting} // Désactiver pendant la suppression
                                                     className="mt-4 px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-800"
                                                 >
-                                                    {t("tickets.delete")}
+                                                    {isDeleting ? (
+                                                        <Spinner /> // Afficher le spinner pendant la suppression
+                                                    ) : (
+                                                        t("tickets.delete")
+                                                    )}
                                                 </button>
                                             )}
-
-
                                         </div>
                                     ))}
                                 </div>

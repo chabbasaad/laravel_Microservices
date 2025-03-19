@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import useUserStore from "../../../service/store/user-store";
+import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function UpdateUserAdmin({
                                             id,
@@ -13,6 +14,7 @@ export default function UpdateUserAdmin({
         name: "",
         email: "",
     });
+    const [isLoading, setIsLoading] = useState(false); // Ajout du state pour le chargement
 
     useEffect(() => {
         const selectedUser = users.find((user) => user.id === id);
@@ -33,10 +35,17 @@ export default function UpdateUserAdmin({
         });
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        updateUser(id, userData);
-        setIsOpenUpdate(false);
+        setIsLoading(true); // Activation du chargement
+        try {
+            await updateUser(id, userData); // Appel de la mise à jour
+            setIsOpenUpdate(false); // Fermer le modal après succès
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour :", error);
+        } finally {
+            setIsLoading(false); // Désactivation du chargement
+        }
     };
 
     return (
@@ -75,9 +84,14 @@ export default function UpdateUserAdmin({
 
                 <button
                     type="submit"
-                    className="w-full bg-gray-950 text-white py-2 rounded-lg font-semibold transition duration-200 hover:bg-gray-800"
+                    disabled={isLoading} // Désactivation du bouton pendant le chargement
+                    className={`w-full py-2 rounded-lg font-semibold transition duration-200 ${
+                        isLoading
+                            ? "bg-gray-400 cursor-not-allowed"
+                            : "bg-gray-950 text-white hover:bg-gray-800"
+                    }`}
                 >
-                    Mettre à jour l'utilisateur
+                    {isLoading ? <Spinner /> : "Mettre à jour l'utilisateur"}
                 </button>
             </form>
         </div>

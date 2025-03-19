@@ -1,36 +1,36 @@
 import { useTranslation } from "react-i18next";
 import useEventStore from "../../../service/store/event-store.tsx";
-import { useEffect, useState } from "react";
-import {Dialog} from "../../../components/kit-ui/dialog";
+import React, { useEffect, useState } from "react";
+import { Dialog } from "../../../components/kit-ui/dialog";
 import CreateEventsAdmin from "./create-events-admin.tsx";
 import UpdateEventAdmin from "./update-event-admin.tsx";
-
+import Spinner from "../../../components/sniper/sniper.tsx";
 
 export default function ListEventsAdmin() {
     const { t } = useTranslation();
-    const { events, fetchEvents, deleteEvent } = useEventStore();
+    const { events, fetchEvents, deleteEvent, isLoading } = useEventStore();
     const [isOpenCreate, setIsOpenCreate] = useState(false);
     const [isOpenUpdate, setIsOpenUpdate] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-
-    const handleUpdateClick = (id: number) => {
-        setSelectedEventId(id);
-        setIsOpenUpdate(true);
-    }
-
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         fetchEvents();
-    }, [fetchEvents]);
+    }, [fetchEvents,]);
 
-    const handleDelete = (eventId: number) => {
+    const handleUpdateClick = (id: number) => {
+        setSelectedEventId(id);
+        setIsOpenUpdate(true);
+    };
+
+    const handleDelete = async (eventId: number) => {
         if (window.confirm(t("confirm_delete"))) {
             setIsDeleting(true);
-            deleteEvent(eventId);
+            await deleteEvent(eventId);
             setIsDeleting(false);
         }
     };
+
     return (
         <div className="px-4 sm:px-6 lg:px-8 mt-20">
             <div className="sm:flex sm:items-center">
@@ -50,13 +50,19 @@ export default function ListEventsAdmin() {
                     </button>
                 </div>
             </div>
+
             <div className="mt-8 flow-root">
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                         <table className="min-w-full divide-y divide-gray-300">
                             <thead>
                             <tr>
-                                <th scope="col" className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                                <th scope="col"
+                                    className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-3">
+                                    {t("id")}
+                                </th>
+                                <th scope="col"
+                                    className="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-3">
                                     {t("name")}
                                 </th>
                                 <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
@@ -74,13 +80,22 @@ export default function ListEventsAdmin() {
                             </tr>
                             </thead>
                             <tbody className="bg-white">
-                            {events.length === 0 ? (
+                            {isLoading ? (
+                                <tr>
+                                <td colSpan={5} className="py-4 text-center text-sm text-gray-500">
+                                        <Spinner />
+                                    </td>
+                                </tr>
+                            ) : events.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="py-4 text-center text-sm text-gray-500">{t("no_events")}</td>
                                 </tr>
                             ) : (
                                 events.map((event) => (
                                     <tr key={event.id} className="even:bg-gray-50">
+                                        <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-3">
+                                            {event.id}
+                                        </td>
                                         <td className="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-3">
                                             {event.title}
                                         </td>
@@ -111,11 +126,13 @@ export default function ListEventsAdmin() {
                     </div>
                 </div>
             </div>
-            <Dialog className="mt-20"  open={isOpenCreate} onClose={() => setIsOpenCreate(false)}>
-                <CreateEventsAdmin setIsOpenCreate={setIsOpenCreate}  />
+
+            <Dialog className="mt-20" open={isOpenCreate} onClose={() => setIsOpenCreate(false)}>
+                <CreateEventsAdmin setIsOpenCreate={setIsOpenCreate} />
             </Dialog>
-            <Dialog  open={isOpenUpdate} onClose={() => setIsOpenUpdate(false)}>
-                {selectedEventId && <UpdateEventAdmin id={selectedEventId} setIsOpenUpdate={setIsOpenUpdate}  />}
+
+            <Dialog open={isOpenUpdate} onClose={() => setIsOpenUpdate(false)}>
+                {selectedEventId && <UpdateEventAdmin id={selectedEventId} setIsOpenUpdate={setIsOpenUpdate} />}
             </Dialog>
         </div>
     );

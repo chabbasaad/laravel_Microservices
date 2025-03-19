@@ -43,6 +43,7 @@ export default function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("user_token");
+    localStorage.removeItem("user_data");
     window.location.reload();
   };
 

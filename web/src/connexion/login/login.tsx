@@ -1,24 +1,31 @@
 import { useState } from "react";
-import {toast} from "react-toastify";
-import {login} from "../../service/services/user-service.tsx";
+import { toast } from "react-toastify";
+import { login } from "../../service/services/user-service.tsx";
 
 export default function Login({ closeModal }: { closeModal: () => void }) {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [isLoading, setIsLoading] = useState(false); // Ajouter un état pour le chargement
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const user = {
             email,
             password
-        }
-        const response = await login(user);
+        };
 
-        if (response) {
-            localStorage.setItem("user_token", response.token);
-            localStorage.setItem("user_data", JSON.stringify(response.user));
-            toast.success(`${response.message || "Unknown error"}`);
-            closeModal()
+        setIsLoading(true);
+        try {
+            const response = await login(user);
+            if (response) {
+                localStorage.setItem("user_token", response.token);
+                localStorage.setItem("user_data", JSON.stringify(response.user));
+                closeModal();
+                window.location.reload();
+            }
+        } catch (error) {
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -31,7 +38,7 @@ export default function Login({ closeModal }: { closeModal: () => void }) {
             </div>
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white px-6 py-12  sm:rounded-lg sm:px-12">
+                <div className="bg-white px-6 py-12 sm:rounded-lg sm:px-12">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-900">
@@ -70,9 +77,16 @@ export default function Login({ closeModal }: { closeModal: () => void }) {
                         <div>
                             <button
                                 type="submit"
+                                disabled={isLoading} // Désactiver le bouton pendant le chargement
                                 className="w-full rounded-md bg-gray-950 px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                             >
-                                Connexion
+                                {isLoading ? (
+                                    <div className="flex justify-center items-center">
+                                        <span className="ml-2">Chargement...</span>
+                                    </div>
+                                ) : (
+                                    "Connexion"
+                                )}
                             </button>
                         </div>
                     </form>
