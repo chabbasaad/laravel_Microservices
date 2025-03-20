@@ -11,6 +11,11 @@ class Ticket extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // Ticket status constants
+    public const STATUS_CONFIRMED = 'confirmed';
+    public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_USED = 'used';
+
     protected $fillable = [
         'ticket_number',
         'event_id',
@@ -37,6 +42,30 @@ class Ticket extends Model
     protected $hidden = [
         'deleted_at'
     ];
+
+    /**
+     * Check if the ticket can be cancelled
+     */
+    public function canBeCancelled(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMED
+            && $this->used_at === null
+            && $this->cancelled_at === null;
+    }
+
+    /**
+     * Cancel the ticket
+     */
+    public function cancel(): void
+    {
+        if (!$this->canBeCancelled()) {
+            throw new \Exception('Ticket cannot be cancelled');
+        }
+
+        $this->status = self::STATUS_CANCELLED;
+        $this->cancelled_at = now();
+        $this->save();
+    }
 
     /**
      * Boot the model.
@@ -71,16 +100,6 @@ class Ticket extends Model
     }
 
     /**
-     * Check if the ticket can be cancelled.
-     */
-    public function canBeCancelled(): bool
-    {
-        return $this->status === 'confirmed' && 
-               !$this->used_at && 
-               !$this->cancelled_at;
-    }
-
-    /**
      * Check if the ticket can be used.
      */
     public function canBeUsed(): bool
@@ -105,31 +124,27 @@ class Ticket extends Model
     }
 
     /**
-     * Cancel the ticket.
-     */
-    public function cancel(): void
-    {
-        if (!$this->canBeCancelled()) {
-            throw new \Exception('Ticket cannot be cancelled');
-        }
-
-        $this->cancelled_at = now();
-        $this->status = 'cancelled';
-        $this->save();
-    }
-
-    /**
      * Confirm the ticket after successful payment.
      */
     public function confirm(): void
     {
-        if ($this->status !== 'pending') {
-            throw new \Exception('Ticket is not in pending status');
-        }
-
-        $this->status = 'confirmed';
+        $this->status = self::STATUS_CONFIRMED;
         $this->purchase_date = now();
         $this->save();
+    }
+
+    /**
+     * Create a new ticket for an event.
+     */
+    public static function createForEvent(int $eventId, int $userId, float $price): self
+    {
+        return self::create([
+            'event_id' => $eventId,
+            'user_id' => $userId,
+            'price' => $price,
+            'status' => self::STATUS_CONFIRMED,
+            'purchase_date' => now()
+        ]);
     }
 
     /**

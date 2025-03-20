@@ -10,6 +10,9 @@ use App\Http\Middleware\CheckRole;
 // Health Check
 Route::get('health', [HealthController::class, 'check']);
 
+// Public Routes (no authentication required)
+Route::get('/public', [EventController::class, 'publicEvents']);
+
 // Protected Routes
 Route::middleware(TrustGatewayAuth::class)->group(function () {
     Route::get('/user', function (Request $request) {

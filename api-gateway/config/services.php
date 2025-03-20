@@ -67,7 +67,8 @@ return [
                 'store' => 'POST /',
                 'show' => 'GET /{id}',
                 'update' => 'PUT /{id}',
-                'delete' => 'DELETE /{id}'
+                'delete' => 'DELETE /{id}',
+                'public-events' => 'GET /public'
             ]
         ],
         'tickets' => [
@@ -79,7 +80,8 @@ return [
                 'user-tickets' => 'GET /user/{userId}',
                 'show' => 'GET /{ticketId}',
                 'validate' => 'POST /{ticketId}/validate',
-                'cancel' => 'POST /{ticketId}/cancel'
+                'cancel' => 'POST /{ticketId}/cancel',
+                'list' => 'GET /'
             ]
         ],
         'notifications' => [

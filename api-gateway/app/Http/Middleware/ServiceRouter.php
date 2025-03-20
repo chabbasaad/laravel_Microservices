@@ -42,6 +42,11 @@ class ServiceRouter
             return $this->forwardRequest($request, $fullUrl);
         }
 
+        // Allow public events endpoint without authentication
+        if ($service === 'events' && $targetPath === 'public') {
+            return $this->forwardRequest($request, $fullUrl);
+        }
+
         // For auth service requests, just forward them as is
         if ($service === 'auth') {
             return $this->forwardRequest($request, $fullUrl);

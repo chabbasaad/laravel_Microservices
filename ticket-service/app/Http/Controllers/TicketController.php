@@ -109,152 +109,36 @@ class TicketController extends Controller
                 // Calculate total price
                 $totalPrice = $event['price'] * $request->quantity;
 
-                // Create tickets and process payment
+                // Create tickets in a transaction
+                \DB::beginTransaction();
+
                 $tickets = [];
-                $successfulTickets = 0;
-
                 for ($i = 0; $i < $request->quantity; $i++) {
-                    try {
-                        // Begin transaction
-                        \DB::beginTransaction();
-
-                        // Create ticket
-                        $ticket = Ticket::create([
-                            'event_id' => $request->event_id,
-                            'user_id' => $user['id'],
-                            'price' => $event['price'],
-                            'status' => 'pending',
-                            'purchase_date' => now()
-                        ]);
-
-                        // Create and process payment
-                        $payment = new Payment([
-                            'ticket_id' => $ticket->id,
-                            'amount' => $event['price'],
-                            'payment_method' => 'credit_card',
-                            'status' => 'pending'
-                        ]);
-
-                        $payment->save();
-
-                        // Process the payment
-                        if ($payment->process($request->payment)) {
-                            // Update ticket status to confirmed after successful payment
-                            $ticket->update([
-                                'status' => 'confirmed',
-                                'purchase_date' => now()
-                            ]);
-                            
-                            $successfulTickets++;
-                            $tickets[] = $ticket->getFullDetails();
-
-                            // Send test notification first
-                            // try {
-                            //     $testUrl = rtrim(config('services.notifications.base_url'), '/') . config('services.notifications.routes.test');
-                                
-                            //     Log::info('Sending test notification', [
-                            //         'url' => $testUrl
-                            //     ]);
-
-                            //     $testResponse = Http::withHeaders([
-                            //         'Accept' => 'application/json',
-                            //         'Content-Type' => 'application/json'
-                            //     ])->get($testUrl);
-
-                            //     Log::info('Test notification response', [
-                            //         'status' => $testResponse->status(),
-                            //         'body' => $testResponse->body()
-                            //     ]);
-
-                            //     if (!$testResponse->successful()) {
-                            //         Log::error('Test notification failed', [
-                            //             'status' => $testResponse->status(),
-                            //             'body' => $testResponse->body()
-                            //         ]);
-                            //     }
-                            // } catch (\Exception $e) {
-                            //     Log::error('Error sending test notification', [
-                            //         'error' => $e->getMessage(),
-                            //         'trace' => $e->getTraceAsString()
-                            //     ]);
-                            // }
-
-                            // Send purchase notification
-                            try {
-                                $notificationUrl = rtrim(config('services.notifications.base_url'), '/') . config('services.notifications.routes.purchase');
-                                
-                                Log::info('Sending purchase notification', [
-                                    'url' => $notificationUrl,
-                                    'data' => [
-                                        'email' => $user['email'],
-                                        'ticket_number' => (string)$ticket->id,  // Convert to string
-                                        'event' => [
-                                            'title' => $event['title'],
-                                            'date' => $event['date'],
-                                            'location' => $event['location']
-                                        ],
-                                        'price' => $event['price'],
-                                        'purchase_date' => now()->format('Y-m-d H:i:s')
-                                    ]
-                                ]);
-
-                                $notificationResponse = Http::withHeaders([
-                                    'Accept' => 'application/json',
-                                    'Content-Type' => 'application/json'
-                                ])->post($notificationUrl, [
-                                    'email' => $user['email'],
-                                    'ticket_number' => (string)$ticket->id,  // Convert to string
-                                    'event' => [
-                                        'title' => $event['title'],
-                                        'date' => $event['date'],
-                                        'location' => $event['location']
-                                    ],
-                                    'price' => $event['price'],
-                                    'purchase_date' => now()->format('Y-m-d H:i:s')
-                                ]);
-
-                                Log::info('Purchase notification response', [
-                                    'status' => $notificationResponse->status(),
-                                    'body' => $notificationResponse->body()
-                                ]);
-
-                                if (!$notificationResponse->successful()) {
-                                    Log::error('Failed to send purchase notification', [
-                                        'ticket_id' => $ticket->id,
-                                        'response' => $notificationResponse->body(),
-                                        'status' => $notificationResponse->status(),
-                                        'url' => $notificationUrl
-                                    ]);
-                                }
-                            } catch (\Exception $e) {
-                                Log::error('Error sending purchase notification', [
-                                    'error' => $e->getMessage(),
-                                    'trace' => $e->getTraceAsString(),
-                                    'ticket_id' => $ticket->id,
-                                    'url' => $notificationUrl ?? 'unknown'
-                                ]);
-                            }
-
-                            \DB::commit();
-                        } else {
-                            \DB::rollBack();
-                            throw new \Exception('Payment processing failed');
-                        }
-                    } catch (\Exception $e) {
-                        \DB::rollBack();
-                        Log::error('Failed to process ticket purchase', [
-                            'error' => $e->getMessage(),
-                            'ticket_number' => $i + 1
-                        ]);
-                    }
+                    $ticket = Ticket::createForEvent(
+                        $event['id'],
+                        $user['id'],
+                        $event['price']
+                    );
+                    $tickets[] = $ticket;
                 }
 
-                // If no tickets were successfully purchased
-                if ($successfulTickets === 0) {
-                    return response()->json([
-                        'error' => 'Failed to process payment for tickets'
-                    ], 500);
+                // Create payment record
+                $payment = Payment::create([
+                    'amount' => $event['price'] * $request->quantity,
+                    'status' => 'completed',
+                    'payment_date' => now(),
+                    'payment_method' => 'card',
+                    'last_four' => substr($request->payment['card_number'], -4),
+                    'user_id' => $user['id']
+                ]);
+
+                // Associate payment with tickets
+                foreach ($tickets as $ticket) {
+                    $ticket->payment()->associate($payment);
+                    $ticket->save();
                 }
+
+                \DB::commit();
 
                 // Update event available tickets
                 $updateUrl = rtrim(config('services.events.base_url'), '/') . config('services.events.routes.update');
@@ -262,7 +146,7 @@ class TicketController extends Controller
                 
                 Log::info('Updating event tickets', [
                     'url' => $updateUrl,
-                    'tickets_purchased' => $successfulTickets
+                    'tickets_purchased' => $request->quantity
                 ]);
 
                 // Simplified update payload - only send what needs to change
@@ -271,7 +155,7 @@ class TicketController extends Controller
                     'X-User-Role' => strtolower($user['role'])
                 ])->withToken($request->bearerToken())
                   ->patch($updateUrl, [
-                    'available_tickets' => $event['available_tickets'] - $successfulTickets
+                    'available_tickets' => $event['available_tickets'] - $request->quantity
                 ]);
 
                 if (!$updateResponse->successful()) {
@@ -283,9 +167,7 @@ class TicketController extends Controller
                 }
 
                 return response()->json([
-                    'message' => $successfulTickets === $request->quantity 
-                        ? 'All tickets purchased successfully' 
-                        : "Successfully purchased {$successfulTickets} out of {$request->quantity} tickets",
+                    'message' => 'Tickets purchased successfully',
                     'tickets' => $tickets
                 ], 201);
 
@@ -826,5 +708,62 @@ class TicketController extends Controller
             return "Ticket has already been cancelled";
         }
         return "Unknown reason";
+    }
+
+    /**
+     * Get tickets based on user role
+     * - Admin: Can see all tickets
+     * - Event Creator: Can see tickets for their events
+     */
+    public function getTickets(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->get('user');
+            $query = Ticket::query();
+            
+            // Apply filters
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+            
+            // If event creator, get event IDs they created first
+            if ($user['role'] === 'event_creator') {
+                $eventUrl = rtrim(config('services.events.base_url'), '/') . '/api/creator/' . $user['id'] . '/events';
+                
+                $eventResponse = Http::withOptions([
+                    'timeout' => 30,
+                    'verify' => false
+                ])->withHeaders([
+                    'X-User-Id' => (string)$user['id'],
+                    'X-User-Role' => 'event_creator'
+                ])->withToken($request->bearerToken())
+                  ->get($eventUrl);
+
+                if (!$eventResponse->successful()) {
+                    return response()->json(['error' => 'Failed to fetch creator events'], 500);
+                }
+
+                $creatorEvents = collect($eventResponse->json()['data'] ?? [])->pluck('id');
+                $query->whereIn('event_id', $creatorEvents);
+            }
+            // For admin, no filtering needed as they can see all tickets
+            
+            $tickets = $query->with(['payment'])
+                           ->orderBy('created_at', 'desc')
+                           ->paginate(20);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $tickets,
+                'message' => 'Tickets retrieved successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch tickets: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch tickets'
+            ], 500);
+        }
     }
 }

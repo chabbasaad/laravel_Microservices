@@ -10,9 +10,10 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckRole
 {
     private array $rolePermissions = [
-        'admin' => ['view', 'purchase', 'validate', 'cancel'],
+        'admin' => ['view', 'purchase', 'validate', 'cancel', 'admin', 'event_creator'],
         'operator' => ['view', 'validate'],
-        'user' => ['view', 'purchase', 'cancel']
+        'user' => ['view', 'purchase', 'cancel'],
+        'event_creator' => ['view', 'validate', 'event_creator']
     ];
 
     public function handle(Request $request, Closure $next, string $permission): Response
@@ -28,14 +29,31 @@ class CheckRole
             ], 401);
         }
 
-        $userRole = $user['role'];
+        $userRole = strtolower($user['role']);
 
-        // Check if role exists and has required permission
-        if (!isset($this->rolePermissions[$userRole]) || 
-            !in_array($permission, $this->rolePermissions[$userRole])) {
+        // For comma-separated permissions, check if user has ANY of the permissions
+        $requiredPermissions = explode(',', $permission);
+        $hasPermission = false;
+
+        foreach ($requiredPermissions as $reqPermission) {
+            $reqPermission = trim($reqPermission);
+            // If the user's role directly matches the required permission
+            if ($userRole === $reqPermission) {
+                $hasPermission = true;
+                break;
+            }
+            // Or if the user's role has the required permission
+            if (isset($this->rolePermissions[$userRole]) && 
+                in_array($reqPermission, $this->rolePermissions[$userRole])) {
+                $hasPermission = true;
+                break;
+            }
+        }
+
+        if (!$hasPermission) {
             Log::warning('Insufficient permissions', [
                 'role' => $userRole,
-                'required_permission' => $permission
+                'required_permissions' => $requiredPermissions
             ]);
             return response()->json([
                 'message' => 'Forbidden - Insufficient permissions'

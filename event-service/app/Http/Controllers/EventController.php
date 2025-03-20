@@ -402,4 +402,32 @@ class EventController extends Controller
             return response()->json(['error' => 'Failed to remove sponsor'], 500);
         }
     }
+
+    public function publicEvents()
+    {
+        try {
+            $events = Event::where('status', 'published')
+                ->orderBy('date', 'asc')
+                ->paginate(10);
+
+            // Transform the response to include parsed speakers and sponsors
+            $events->getCollection()->transform(function ($event) {
+                $event->speakers = json_decode($event->speakers ?? '[]', true);
+                $event->sponsors = json_decode($event->sponsors ?? '[]', true);
+                return $event;
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $events,
+                'message' => 'Public events retrieved successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to fetch public events: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch events'
+            ], 500);
+        }
+    }
 }

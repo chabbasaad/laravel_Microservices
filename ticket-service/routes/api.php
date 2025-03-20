@@ -24,6 +24,10 @@ Route::get('/health', function () {
 
 // Protected routes with role-based access
 Route::middleware('trust.gateway')->group(function () {
+    // Admin and Event Creator: View tickets
+    Route::get('/', [TicketController::class, 'getTickets'])
+        ->middleware('check.role:admin,event_creator');
+
     // Ticket purchase
     Route::post('/purchase', [TicketController::class, 'purchase'])
         ->middleware('check.role:purchase');
