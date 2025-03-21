@@ -1,0 +1,271 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./api-gateway:/var/www
+      - /var/www/vendor
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=mysql
+      - DB_HOST=api-gateway-db
+      - DB_PORT=3306
+      - DB_DATABASE=api_gateway
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - AUTH_SERVICE_URL=http://auth-service
+      - USER_SERVICE_URL=http://user-service
+      - EVENT_SERVICE_URL=http://event-service
+      - TICKET_SERVICE_URL=http://ticket-service
+      - NOTIFICATION_SERVICE_URL=http://noti-service
+    depends_on:
+      - api-gateway-db
+    networks:
+      - microservices-net
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    volumes:
+      - ./auth-service:/var/www
+      - /var/www/vendor
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=mysql
+      - DB_HOST=auth-db
+      - DB_PORT=3306
+      - DB_DATABASE=auth_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+    depends_on:
+      - auth-db
+    networks:
+      - microservices-net
+
+  # User Service
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "8002:80"
+    volumes:
+      - ./user-service:/var/www
+      - /var/www/vendor
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=mysql
+      - DB_HOST=user-db
+      - DB_PORT=3306
+      - DB_DATABASE=user_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+    depends_on:
+      - user-db
+    networks:
+      - microservices-net
+
+  # Event Service
+  event-service:
+    build:
+      context: ./event-service
+      dockerfile: Dockerfile
+    container_name: event-service
+    restart: unless-stopped
+    ports:
+      - "8003:80"
+    volumes:
+      - ./event-service:/var/www
+      - /var/www/vendor
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=mysql
+      - DB_HOST=event-db
+      - DB_PORT=3306
+      - DB_DATABASE=event_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+    depends_on:
+      - event-db
+    networks:
+      - microservices-net
+
+  # Ticket Service
+  ticket-service:
+    build:
+      context: ./ticket-service
+      dockerfile: Dockerfile
+    container_name: ticket-service
+    restart: unless-stopped
+    ports:
+      - "8004:80"
+    volumes:
+      - ./ticket-service:/var/www
+      - /var/www/vendor
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=mysql
+      - DB_HOST=ticket-db
+      - DB_PORT=3306
+      - DB_DATABASE=ticket_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - CACHE_DRIVER=file
+      - CACHE_STORE=file
+      - CACHE_PREFIX=ticket-service
+      - SESSION_DRIVER=file
+    depends_on:
+      - ticket-db
+    networks:
+      - microservices-net
+
+  # Notification Service
+   # Notification Service
+  noti-service:
+    build:
+      context: ./noti-service
+      dockerfile: Dockerfile
+    container_name: noti-service
+    restart: unless-stopped
+    ports:
+      - "8005:80"
+    volumes:
+      - ./noti-service:/var/www
+      - /var/www/vendor
+    environment:
+      - APP_ENV=local
+      - DB_CONNECTION=mysql
+      - DB_HOST=notification-db
+      - DB_PORT=3306
+      - DB_DATABASE=notification_service
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - CACHE_DRIVER=file
+      - CACHE_STORE=file
+      - CACHE_PREFIX=notification-service
+      - SESSION_DRIVER=file
+    depends_on:
+      - notification-db
+    networks:
+      - microservices-net
+
+  # Databases
+  api-gateway-db:
+    image: mysql:8.0
+    container_name: api-gateway-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: api_gateway
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - api-gateway-data:/var/lib/mysql
+    networks:
+      - microservices-net
+
+  auth-db:
+    image: mysql:8.0
+    container_name: auth-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: auth_service
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3307:3306"
+    volumes:
+      - auth-data:/var/lib/mysql
+    networks:
+      - microservices-net
+
+  user-db:
+    image: mysql:8.0
+    container_name: user-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: user_service
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3308:3306"
+    volumes:
+      - user-data:/var/lib/mysql
+    networks:
+      - microservices-net
+
+  event-db:
+    image: mysql:8.0
+    container_name: event-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: event_service
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3309:3306"
+    volumes:
+      - event-data:/var/lib/mysql
+    networks:
+      - microservices-net
+
+  ticket-db:
+    image: mysql:8.0
+    container_name: ticket-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ticket_service
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3310:3306"
+    volumes:
+      - ticket-data:/var/lib/mysql
+    networks:
+      - microservices-net
+
+  notification-db:
+    image: mysql:8.0
+    container_name: notification-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: notification_service
+      MYSQL_ROOT_PASSWORD: secret
+    ports:
+      - "3311:3306"
+    volumes:
+      - notification-data:/var/lib/mysql
+    networks:
+      - microservices-net
+
+  # # Redis for caching and queues
+  # redis:
+  #   image: redis:alpine
+  #   container_name: redis
+  #   restart: unless-stopped
+  #   networks:
+  #     - microservices-net
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  api-gateway-data:
+  auth-data:
+  user-data:
+  event-data:
+  ticket-data:
+  notification-data:

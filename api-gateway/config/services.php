@@ -42,7 +42,7 @@ return [
             'routes' => [
                 'health' => 'GET /health',
                 'login' => 'POST /login',
-                'register' => 'POST /register',
+                'register' => 'POST /api/register',
                 'validate' => 'GET /api/user'
             ]
         ],
