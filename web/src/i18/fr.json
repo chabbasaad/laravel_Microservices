@@ -54,7 +54,8 @@
     "delete": "Supprimer",
     "status" : "Status de ticket",
     "purchase_date" : "Date d'achat",
-    "add" : "Ajouter un Ticket"
+    "add" : "Ajouter un Ticket",
+    "validate" : "Valider"
   },
 
   "users": {

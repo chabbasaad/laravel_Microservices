@@ -52,6 +52,28 @@ export const createTicket = async (params: CreateTicketRequest): Promise<CreateT
 };
 
 
+export const validateTicket = async (id: number): Promise<any> => {
+    try {
+        const response = await axios.post<CreateTicketResponse>(`${API_URL}tickets/${id}/validate`, { headers: getAuthHeaders() });
+        toast.success("Success");
+        return response.data;
+    } catch (error) {
+        console.log(error)
+        if (error instanceof AxiosError && error.response) {
+            const errorData = error.response.data;
+            if (errorData.errors) {
+                const errorMessages = Object.values(errorData.errors).flat();
+                errorMessages.forEach((msg : any) => toast.error(msg));
+            } else {
+                toast.error(errorData.message || error.response.data.error);
+            }
+        } else {
+            toast.error("Erreur inconnue");
+        }
+        throw error;
+    }
+};
+
 export const deleteTicket = async (id: number,params : any): Promise<Event> => {
     try {
         const response = await axios.post<Event>(`${API_URL}tickets/${id}/cancel`, params,{ headers: getAuthHeaders() });

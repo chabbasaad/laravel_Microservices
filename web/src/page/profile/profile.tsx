@@ -14,7 +14,7 @@ export default function Profile() {
     const { t } = useTranslation();
 
     const { user, updateUser, fetchUser } = useUserStore();
-    const { tickets, fetchTickets, deleteTicket, loading } = useTicketStore();
+    const { tickets, fetchTickets, deleteTicket, loading: ticketLoading } = useTicketStore();
     const userData = localStorage.getItem("user_data");
     const userLocal = userData ? JSON.parse(userData) : "";
 
@@ -26,20 +26,36 @@ export default function Profile() {
         password: "",
     });
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);  // Pour les tickets et les données générales
+    const [isUserLoading, setIsUserLoading] = useState(true);  // Ajouter un état de chargement pour l'utilisateur
 
     const role = typeof userLocal === "object" && userLocal !== null ? userLocal?.role : undefined;
     const id = typeof userLocal === "object" && userLocal !== null ? userLocal?.id : undefined;
+
     useEffect(() => {
-        fetchTickets(id);
-        fetchUser(id, role);
-    }, []);
+        const fetchData = async () => {
+            setIsLoading(true);  // Début du chargement des tickets
+            setIsUserLoading(true);  // Début du chargement des données utilisateur
+            try {
+                await fetchTickets(id);  // Récupérer les tickets
+                await fetchUser(id, role);  // Récupérer les données de l'utilisateur
+            } catch (error) {
+                console.error("Erreur lors du chargement des données:", error);
+            } finally {
+                setIsLoading(false);  // Fin du chargement des tickets
+                setIsUserLoading(false);  // Fin du chargement des données utilisateur
+            }
+        };
+
+        fetchData();
+    }, [id, role]);
 
     const handleNavigationClick = (name: string) => {
         setCurrentNavigation(name);
     };
 
     const handleDeleteTicket = async (ticketId: number, eventId: number, quantity: number) => {
-        setIsDeleting(true); // Démarre la suppression
+        setIsDeleting(true);
         const params = {
             event_id: eventId,
             quantity: quantity,
@@ -53,7 +69,7 @@ export default function Profile() {
         try {
             await deleteTicket(ticketId, params); // Suppression du ticket
         } catch (error) {
-            console.error(error);
+            console.error("Erreur lors de la suppression du ticket:", error);
         } finally {
             setIsDeleting(false); // Fin de la suppression
         }
@@ -64,8 +80,12 @@ export default function Profile() {
     };
 
     const handleSubmit = async () => {
-        await updateUser(id | 1, formData);
-        setEditMode(false);
+        try {
+            await updateUser(id | 1, formData);
+            setEditMode(false);
+        } catch (error) {
+            console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
+        }
     };
 
     return (
@@ -82,18 +102,10 @@ export default function Profile() {
                                         e.preventDefault();
                                         handleNavigationClick(item.name);
                                     }}
-                                    className={`group flex gap-x-3 rounded-md py-2 pr-3 pl-2 text-sm font-semibold ${
-                                        currentNavigation === item.name
-                                            ? "bg-gray-200 text-gray-950"
-                                            : "text-gray-800 hover:bg-gray-950 hover:text-white"
-                                    }`}
+                                    className={`group flex gap-x-3 rounded-md py-2 pr-3 pl-2 text-sm font-semibold ${currentNavigation === item.name ? "bg-gray-200 text-gray-950" : "text-gray-800 hover:bg-gray-950 hover:text-white"}`}
                                 >
                                     <item.icon
-                                        className={`size-6 shrink-0 ${
-                                            currentNavigation === item.name
-                                                ? "text-gray-950"
-                                                : "text-gray-400 group-hover:text-white"
-                                        }`}
+                                        className={`size-6 shrink-0 ${currentNavigation === item.name ? "text-gray-950" : "text-gray-400 group-hover:text-white"}`}
                                     />
                                     {item.name}
                                 </a>
@@ -111,7 +123,11 @@ export default function Profile() {
                             <h2 className="text-base font-semibold text-gray-900">Profile</h2>
                             <p className="mt-1 text-sm text-gray-500">{t("title-profile")}</p>
 
-                            {user ? (
+                            {isUserLoading ? (  // Afficher le spinner si les données utilisateur sont en cours de chargement
+                                <div className="mt-4 text-center">
+                                    <Spinner />
+                                </div>
+                            ) : user ? (
                                 <div className="mt-6 space-y-4">
                                     {!editMode ? (
                                         <dl className="border-t border-gray-200 divide-y divide-gray-100 text-sm">
@@ -200,30 +216,28 @@ export default function Profile() {
                             <h2 className="text-base font-semibold text-gray-900">{t("tickets.title")}</h2>
                             <p className="mt-1 text-sm text-gray-500">{t("tickets.description")}</p>
 
-                            {loading ? (
-                                <p className="mt-4 text-center text-gray-500">{t("tickets.loading")}</p>
+                            {isLoading ? (
+                                <div className="mt-4 text-center">
+                                    <Spinner />
+                                </div>
                             ) : tickets.length === 0 ? (
                                 <p className="mt-4 text-gray-900">{t("tickets.no_tickets")}</p>
                             ) : (
                                 <div className="mt-4 space-y-4">
                                     {tickets.map((ticket: any) => (
                                         <div key={ticket.id} className="p-4 border rounded-lg bg-gray-100">
-                                            <p className="font-semibold text-gray-900">{t("tickets.ticket_number")}
-                                                #{ticket.ticket_number}</p>
+                                            <p className="font-semibold text-gray-900">{t("tickets.ticket_number")} #{ticket.ticket_number}</p>
+                                            <p className=" text-gray-900">{t("tickets.status")}: {ticket.status}</p>
                                             <p className=" text-gray-900">{t("tickets.event_name")}: {ticket.event.title}</p>
                                             <p className=" text-gray-900">{t("tickets.price")}: {ticket.price}</p>
                                             <p className=" text-gray-900">{t("tickets.created_at")}: {ticket.created_at}</p>
-                                            {ticket.status !== "cancelled" && (
+                                            {ticket.status !== "cancelled" || ticket.status === "confirmed" && (
                                                 <button
                                                     onClick={() => handleDeleteTicket(ticket.id, ticket.event.id, ticket.quantity)}
-                                                    disabled={isDeleting} // Désactiver pendant la suppression
+                                                    disabled={isDeleting}
                                                     className="mt-4 px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-800"
                                                 >
-                                                    {isDeleting ? (
-                                                        <Spinner /> // Afficher le spinner pendant la suppression
-                                                    ) : (
-                                                        t("tickets.delete")
-                                                    )}
+                                                    {isDeleting ? <Spinner /> : t("tickets.delete")}
                                                 </button>
                                             )}
                                         </div>
