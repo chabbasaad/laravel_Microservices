@@ -28,6 +28,21 @@ export const fetchEvents = async (): Promise<FetchEventsResponse> => {
 };
 
 
+export const fetchEventsPublic = async (): Promise<any> => {
+    try {
+        const response = await axios.get<any>(`${API_URL}events/public`, { headers: getAuthHeaders() });
+        return response.data;
+    } catch (error) {
+        if (error instanceof AxiosError && error.response) {
+            const errorMessage = error.response.data?.message || "Une erreur est survenue";
+            console.log(errorMessage)
+        } else {
+            toast.error("Erreur inconnue");
+        }
+        throw error;
+    }
+};
+
 export const fetchEvent = async (id: number): Promise<Event> => {
     try {
         const response = await axios.get<Event>(`${API_URL}events/${id}`, { headers: getAuthHeaders() });

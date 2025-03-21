@@ -2,15 +2,16 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import useEventStore from "../../../service/store/event-store.tsx";
+import Spinner from "../../../components/sniper/sniper.tsx"; // Import du Spinner
 
 export default function ListEvents() {
     const { t } = useTranslation();
-    const { events, fetchEvents, loading } = useEventStore();
+    const { eventPublic, isloadingPublicEvent,fetchEventsPublic } = useEventStore();
     const navigate = useNavigate();
     const userData = localStorage.getItem("user_data");
 
     useEffect(() => {
-        fetchEvents();
+        fetchEventsPublic();
     }, []);
 
     return (
@@ -22,18 +23,20 @@ export default function ListEvents() {
                     </h2>
                     <p className="mt-2 text-lg text-gray-600">{t("event-title")}</p>
                 </div>
-
                 {!userData ? (
-                    <p className="text-center text-red-800 mt-10 text-lg text-gray-500">
-                        {t("please_log_in_to_view")}
-                    </p>
-                ) : loading ? (
-                    <p className="text-center mt-10 text-lg text-gray-500">{t("loading")}</p>
-                ) : events.length === 0 ? (
+                        <p className="text-center text-red-800 mt-10 text-lg text-gray-500">
+                            {t("please_log_in_to_view")}
+                        </p>
+                    ) :
+                    isloadingPublicEvent ? (
+                    <div className="flex justify-center mt-10">
+                        <Spinner />
+                    </div>
+                ) : eventPublic.length === 0 ? (
                     <p className="text-center mt-10 text-lg text-gray-500">{t("no_events")}</p>
                 ) : (
                     <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-                        {events.map((event) => (
+                        {eventPublic.map((event) => (
                             <div
                                 key={event.id}
                                 className="relative isolate flex flex-col justify-end overflow-hidden rounded-2xl cursor-pointer"

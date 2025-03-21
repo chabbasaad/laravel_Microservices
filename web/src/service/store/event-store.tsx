@@ -1,18 +1,27 @@
 import { create } from "zustand";
-import {createEvent, deleteEvent, fetchEvent, fetchEvents, updateEvent} from "../services/event-service.tsx";
+import {
+    createEvent,
+    deleteEvent,
+    fetchEvent,
+    fetchEvents,
+    fetchEventsPublic,
+    updateEvent
+} from "../services/event-service.tsx";
 import {Event, EventCreateRequest} from "../model/event.tsx";
 
 interface EventState {
     events: Event[];
     event: Event | null;
+    eventPublic : Event[];
     loading: boolean;
+    isloadingPublicEvent: boolean;
     isLoading : boolean,
     fetchEvents: () => Promise<void>;
     fetchEvent: (id : number) => Promise<Event | null>;
     createEvent: (params : EventCreateRequest) => Promise<Event | null>;
     deleteEvent: (id : number) => Promise<void>;
     updateEvent: (id : number, params : Event) => Promise<void>;
-
+    fetchEventsPublic: () => Promise<void>;
 
 }
 
@@ -21,6 +30,8 @@ const useEventStore = create<EventState>((set) => ({
     event: null ,
     loading : false,
     isLoading : false,
+    isloadingPublicEvent: false,
+    eventPublic : [],
 
     fetchEvents: async () => {
         set({ isLoading: true });
@@ -30,6 +41,17 @@ const useEventStore = create<EventState>((set) => ({
         } catch (error) {
             console.error(error);
             set({ isLoading: false });
+        }
+    },
+
+    fetchEventsPublic: async () => {
+        set({ isloadingPublicEvent: true });
+        try {
+            const response = await fetchEventsPublic();
+            set({ eventPublic: response.data.data, isloadingPublicEvent: false });
+        } catch (error) {
+            console.error(error);
+            set({ isloadingPublicEvent: false });
         }
     },
 

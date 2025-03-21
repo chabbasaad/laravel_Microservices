@@ -53,10 +53,12 @@
     "delete": "Delete",
     "status" : "Status",
     "purchase_date" : "Purchase date",
-    "add" : "Add Ticket"
+    "add" : "Add Ticket",
+    "validate" : "Validate"
   },
 
   "users": {
     "title":"Users"
   }
+
 }

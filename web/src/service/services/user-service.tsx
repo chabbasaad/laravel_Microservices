@@ -1,6 +1,6 @@
 import axios, {AxiosError} from "axios";
 import {toast} from "react-toastify";
-import {LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse, User} from "../model/user.tsx";
+import {LoginUserRequest, LoginUserResponse, RegisterUserRequest, RegisterUserResponse} from "../model/user.tsx";
 
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -16,12 +16,13 @@ export const register = async (params: Omit<RegisterUserRequest, "id">): Promise
         toast.success(response.data.message);
         return response.data;
     }catch (error : any) {
+        console.log(error)
         const errorData = error.response.data;
         if (errorData.errors) {
             const errorMessages = Object.values(errorData.errors).flat();
             errorMessages.forEach((msg : any) => toast.error(msg));
         } else {
-            toast.error(errorData.error||  error.response.data.error);
+            toast.error(errorData.error||  error.response.data.error ||  error.response.data.message);
         }
         throw error;
 
@@ -31,6 +32,7 @@ export const register = async (params: Omit<RegisterUserRequest, "id">): Promise
 export const login = async (param: Omit<LoginUserRequest, "id">): Promise<LoginUserResponse> => {
     try {
         const response = await axios.post<LoginUserResponse>(API_URL + `auth/login`,param)
+        toast.success(response.data.message);
         return response.data;
     } catch (error : any) {
         const errorData = error.response.data;
@@ -38,15 +40,16 @@ export const login = async (param: Omit<LoginUserRequest, "id">): Promise<LoginU
             const errorMessages = Object.values(errorData.errors).flat();
             errorMessages.forEach((msg : any) => toast.error(msg));
         } else {
-            toast.error(errorData.error ||  error.response.data.error);
+            toast.error(errorData.error ||  error.response.data.message ||  error.response.data.message);
         }
         throw error;
     }
 };
 
-export const fetchUser = async (id: number): Promise<User> => {
+export const fetchUser = async (id: number): Promise<any> => {
     try {
-        const response = await axios.get<User>(`${API_URL}users/${id}`, { headers: getAuthHeaders() });
+        const response = await axios.get<any>(`${API_URL}users/${id}`, { headers: getAuthHeaders() });
+        toast.success(response.data.message);
         return response.data;
     } catch (error) {
         if (error instanceof AxiosError && error.response) {

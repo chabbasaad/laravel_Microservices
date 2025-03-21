@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import {createTicket, deleteTicket, fetchTickets} from "../services/ticket-service.tsx";
+import {createTicket, deleteTicket, fetchTickets, validateTicket} from "../services/ticket-service.tsx";
 import {CreateTicketRequest, Ticket} from "../model/ticket.tsx";
 
 interface TicketState {
@@ -8,6 +8,7 @@ interface TicketState {
     ticketUser : Ticket[];
     loading: boolean;
     isLoading : boolean,
+    validateTicket : (id : number) => Promise<void>
     fetchTickets: (id : number) => Promise<void>;
     createTicket: (id : number,params : CreateTicketRequest) => Promise<void>;
     deleteTicket: (id : number,params : any) => Promise<void>;
@@ -34,6 +35,16 @@ const useTicketStore = create<TicketState>((set) => ({
     createTicket: async (id,params) : Promise<void>  => {
         try {
              await createTicket(params);
+            const tickets = await fetchTickets(id);
+            set({ tickets });
+        } catch (error) {
+            console.error(error);
+        }
+    },
+
+    validateTicket: async (id) : Promise<void>  => {
+        try {
+            await validateTicket(id);
             const tickets = await fetchTickets(id);
             set({ tickets });
         } catch (error) {
