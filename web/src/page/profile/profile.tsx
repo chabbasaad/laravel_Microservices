@@ -14,7 +14,7 @@ export default function Profile() {
     const { t } = useTranslation();
 
     const { user, updateUser, fetchUser } = useUserStore();
-    const { tickets, fetchTickets, deleteTicket, loading: ticketLoading } = useTicketStore();
+    const { tickets, fetchTickets, deleteTicket } = useTicketStore();
     const userData = localStorage.getItem("user_data");
     const userLocal = userData ? JSON.parse(userData) : "";
 

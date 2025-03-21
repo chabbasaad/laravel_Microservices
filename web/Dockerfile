@@ -1,5 +1,5 @@
 # Étape 1: Construction de l'image pour la construction du projet
-FROM node:18 AS build
+FROM node:22 AS build
 
 # Définir le répertoire de travail
 WORKDIR /app
